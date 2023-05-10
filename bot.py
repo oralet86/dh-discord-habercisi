@@ -8,43 +8,27 @@ import os.path
 with open("token.txt") as token:
     TOKEN = token.read()
 
-if not (os.path.exists("values.json")):
+if not os.path.exists("values.json"):
     with open("values.json","w") as f:
         json.dump([],f)
 
-
-prefix = "dh"
-
-dhregex = "(\w+)$"
-
-HELP = f"**{prefix}help** -> Get help about commands."
-
-embed = discord.Embed(title="Commands", description=HELP, color=discord.Color.blurple())
-embed.add_field(name="cs gelcek varmi :))", value="9:59 Tekel", inline=True)
-embed.add_field(name="Yok", value="Bana 2 bremen lütfen !", inline=True)
+PREFIX = "dh"
 
 intents = discord.Intents.default()
 intents.message_content = True
 
-bot = commands.Bot(command_prefix=prefix, intents=intents, help_command=None)
+bot = commands.Bot(command_prefix=PREFIX, intents=intents)
 
 
-def main():
+def main() -> None:
     run_bot()
 
 
-def run_bot():
-
+def run_bot() -> None:
     @bot.event
     async def on_ready():
         print(f"{bot.user} is ready!")
-        
         await bot.load_extension("checker")
-
-
-    @bot.command()
-    async def help(ctx: commands.Context):
-        await ctx.send(embed=embed)
 
     @bot.command()
     async def ekle(ctx: commands.Context, link: str):
@@ -52,7 +36,7 @@ def run_bot():
             case 0:
                 await ctx.send(f"İşlem başarılı! Artık `{link}` forumunda yeni bir konu açıldığında `{ctx.channel.name}` kanalına mesaj atılacak.")
             case 1:
-                await ctx.send(f"Verilen link geçerli bir DonanımHaber linki değil.")
+                await ctx.send("Verilen link geçerli bir DonanımHaber linki değil.")
             case 2:
                 await ctx.send(f"`{link}` forumu `{ctx.channel.name}` kanalında zaten takip ediliyor!")
 
@@ -65,18 +49,14 @@ def run_bot():
     @bot.event
     async def on_command_error(ctx, error):
         print(f"ERROR: {error}")
-        await ctx.send(f"Yanlış komut! Geçerli komutları ve kullanımlarını görmek için: {prefix}help")
+        await ctx.send(f"Yanlış komut! Geçerli komutları ve kullanımlarını görmek için: {PREFIX}help")
 
     @bot.event
     async def on_message(message):
         if message.author == bot.user:
             return
         
-        print(f"{str(message.author)} said '{str(message.content)}' in {str(message.channel)}")
-
-        # if message.content[:3] == f"{prefix}" and (message.guild is None or message.guild.name != "quotes"):
-        #     await message.channel.send("Bot test aşamasında! Şuan genel kullanıma kapalı.")
-        #     return
+        # print(f"{str(message.author)} said '{str(message.content)}' in {str(message.channel)}")
 
         await bot.process_commands(message)
         
