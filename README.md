@@ -2,7 +2,7 @@
 Donanımhaberde bir forumda konu açılınca discord kanalına mesaj gönderir
 
 Sunucuya ekledikten sonra:
-  İstediğiniz kanala gidip "dhekle *link*" yaparak botun yeni bir konu açıldığında o kanala mesaj göndermesiniz sağlayabilirsiniz.
+  İstediğiniz kanala gidip "dhekle *link*" yaparak botun yeni bir konu açıldığında o kanala mesaj göndermesini sağlayabilirsiniz. Eklediğiniz link geçerli bir altforuma gitmeli. Örnek: https://forum.donanimhaber.com/gereksiz-mesajlar--f78
   
   Eğer botun o kanala artik mesaj atmamasini istiyorsaniz "dhcikar" yazarak o kanala eklenmiş tüm altforumları çıkarabilirsiniz.
 
