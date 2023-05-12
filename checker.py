@@ -1,6 +1,8 @@
-import asyncio
 from discord.ext import tasks, commands
-import dhcheck
+from checkerutils import sitecikar, siteekle, yenikonu
+from time import perf_counter
+
+TEST = 1100730493319774218 # Test kanalı
 
 class Checker(commands.Cog):
     def __init__(self, bot):
@@ -12,16 +14,16 @@ class Checker(commands.Cog):
 
     @tasks.loop(seconds=60)
     async def check(self):
-        goat = self.bot.get_channel(1100730493319774218) # Test kanalı :D
+        start = perf_counter()
+        goat = self.bot.get_channel(TEST)
+
+        async for i in yenikonu():
+            for ch in i["channels"]:
+                await self.bot.get_channel(ch).send(f"{i['baslik']} forumlarında yeni konu! \nLink: https://forum.donanimhaber.com{i['link']}")
+
         await goat.send("60 saniye gecti!")
 
-        task = asyncio.create_task(dhcheck.yenikonu())
-
-        for jsondict in (await task):
-            for channelid in jsondict["channels"]:
-                channel = self.bot.get_channel(channelid)
-                for links in jsondict["links"]:
-                    await channel.send(f"{jsondict['baslik']}nda yeni konu! \nLink: https://forum.donanimhaber.com{links}")
+        print(f"Completed Execution in {perf_counter() - start} seconds")
 
     @check.before_loop
     async def before_my_task(self):
@@ -29,17 +31,34 @@ class Checker(commands.Cog):
 
     @commands.command()
     async def baslat(self, ctx: commands.Context):
-        if ctx.channel.id == 1100730493319774218:
+        if ctx.channel.id == TEST:
             ctx.send("Checker cog baslatildi!")
             self.check.start()
 
     @commands.command()
     async def durdur(self, ctx: commands.Context):
-        if ctx.channel.id == 1100730493319774218:
+        if ctx.channel.id == TEST:
             ctx.send("Checker cog durduruldu!")
             self.check.cancel()
 
+    @commands.command()
+    async def ekle(self, ctx: commands.Context, link: str):
+        match await siteekle(ctx, link):
+            case 0:
+                await ctx.send(f"İşlem başarılı! Artık `{link}` forumunda yeni bir konu açıldığında `{ctx.channel.name}` kanalına mesaj atılacak.")
+            case 1:
+                await ctx.send("Verilen link geçerli bir DonanımHaber linki değil.")
+            case 2:
+                await ctx.send(f"`{link}` forumu `{ctx.channel.name}` kanalında zaten takip ediliyor!")
+
+    @commands.command()
+    async def cikar(self, ctx: commands.Context):
+        match await sitecikar(ctx):
+            case 0:
+                await ctx.send(f"İşlem başarılı! Artık `{ctx.channel.name}` kanalında herhangi bir forum takip edilmeyecek.")
+
+
 
 async def setup(bot):
-    print("Checker cog yükleniyor.")
+    print("Checker cog yükleniyor...")
     await bot.add_cog(Checker(bot))
