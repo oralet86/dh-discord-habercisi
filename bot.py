@@ -1,8 +1,11 @@
 import discord
 from discord.ext import commands
+from dotenv import load_dotenv
+import os
 
-with open("token.txt") as token:
-    TOKEN = token.read()
+load_dotenv(".env")
+
+TOKEN = os.getenv("TOKEN")
 
 PREFIX = "dh"
 
@@ -20,7 +23,7 @@ def run_bot() -> None:
     @bot.event
     async def on_ready():
         print(f"{bot.user} is ready!")
-        await bot.load_extension("checker")
+        await bot.load_extension("cogs.checker")
 
     @bot.event
     async def on_command_error(ctx, error):
