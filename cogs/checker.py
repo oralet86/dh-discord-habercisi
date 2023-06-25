@@ -32,14 +32,23 @@ class Checker(commands.Cog):
     @commands.command()
     async def baslat(self, ctx: commands.Context):
         if ctx.channel.id == TEST:
-            ctx.send("Checker cog baslatildi!")
-            self.check.start()
+            try:
+                self.check.start()
+            except RuntimeError:
+                await ctx.send("Checker cog zaten calisiyor.")
+            finally:
+                await ctx.send("Checker cog baslatildi!")
 
     @commands.command()
     async def durdur(self, ctx: commands.Context):
         if ctx.channel.id == TEST:
-            ctx.send("Checker cog durduruldu!")
-            self.check.cancel()
+            try:
+                self.check.cancel()
+            except RuntimeError:
+                await ctx.send("Checker cog zaten durdurulmus.")
+            finally:
+                await ctx.send("Checker cog durduruldu!")
+            
 
     @commands.command()
     async def ekle(self, ctx: commands.Context, link: str):
