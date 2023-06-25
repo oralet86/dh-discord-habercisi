@@ -55,6 +55,16 @@ class Yirmidort(commands.Cog):
     async def before_my_task(self):
         await self.bot.wait_until_ready()
         print("24-saat silme loopu başlıyor")
+        
+    @commands.command()
+    async def ydekle(self, ctx: commands.Context, id=None):
+        yirmidort_values[ctx.channel.id] = id
+
+        with open(yirmidort_dir,"w") as yirmidort_jsonfile:
+            json.dump(yirmidort_values,yirmidort_jsonfile)
+
+        ctx.send(f"Başarılı, bu kanal her gün {starttime} saatinde temizlenecek")
+        
 
 async def setup(bot):
     await bot.add_cog(Yirmidort(bot))
