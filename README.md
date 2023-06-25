@@ -1,5 +1,5 @@
 # dh-discord-habercisi
-Donanımhaberde bir forumda konu açılınca discord kanalına mesaj gönderir
+DH Ceng Lobisi için general purpose discord botu
 
 Sunucuya ekledikten sonra:
   İstediğiniz kanala gidip "dhekle *link*" yaparak botun yeni bir konu açıldığında o kanala mesaj göndermesini sağlayabilirsiniz. Eklediğiniz link geçerli bir altforuma gitmeli. Örnek: https://forum.donanimhaber.com/gereksiz-mesajlar--f78
