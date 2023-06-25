@@ -58,13 +58,18 @@ class Yirmidort(commands.Cog):
         
     @commands.command()
     async def ydekle(self, ctx: commands.Context, id=None):
-        yirmidort_values[ctx.channel.id] = id
+        if ctx.channel.id not in yirmidort_values.keys():
 
-        with open(yirmidort_dir,"w") as yirmidort_jsonfile:
-            json.dump(yirmidort_values,yirmidort_jsonfile)
+            yirmidort_values[ctx.channel.id] = id
 
-        ctx.send(f"Başarılı, bu kanal her gün {starttime} saatinde temizlenecek")
-        
+            with open(yirmidort_dir,"w") as yirmidort_jsonfile:
+                json.dump(yirmidort_values,yirmidort_jsonfile)
+
+            await ctx.send(f"Başarılı, bu kanal her gün {starttime[0].strftime('%H:%M:%S')} saatinde temizlenecek")
+
+        else:
+            await ctx.send("Kanal zaten temizlenecek")
+
 
 async def setup(bot):
     await bot.add_cog(Yirmidort(bot))
