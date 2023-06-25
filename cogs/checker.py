@@ -1,6 +1,5 @@
 from discord.ext import tasks, commands
 from cogs.checker_utils import sitecikar, siteekle, yenikonu
-import discord
 # from time import perf_counter
 
 TEST = 1100730493319774218 # Test kanalı
@@ -51,7 +50,6 @@ class Checker(commands.Cog):
                 await ctx.send("Checker cog zaten durdurulmus.")
             finally:
                 await ctx.send("Checker cog durduruldu!")
-            
 
     @commands.command()
     async def ekle(self, ctx: commands.Context, link: str):
