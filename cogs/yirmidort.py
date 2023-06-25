@@ -8,6 +8,8 @@ starttime = [time(hour=5, minute=0, second=0, tzinfo=timezone(timedelta(hours=3)
 
 yirmidort_dir = f"{abspath(dirname(dirname(__file__)))}\\yirmidort.json"
 
+yirmidort_values = None
+
 if exists(yirmidort_dir) and getsize(yirmidort_dir) != 0:
     with open(yirmidort_dir,"r") as yirmidort_jsonfile:
         yirmidort_values = json.load(yirmidort_jsonfile)
@@ -58,9 +60,10 @@ class Yirmidort(commands.Cog):
         
     @commands.command()
     async def ydekle(self, ctx: commands.Context, id=None):
-        if ctx.channel.id not in yirmidort_values.keys():
+        yd_id = str(ctx.channel.id)
+        if yd_id not in yirmidort_values.keys():
 
-            yirmidort_values[ctx.channel.id] = id
+            yirmidort_values[yd_id] = id
 
             with open(yirmidort_dir,"w") as yirmidort_jsonfile:
                 json.dump(yirmidort_values,yirmidort_jsonfile)
@@ -73,6 +76,25 @@ class Yirmidort(commands.Cog):
 
         else:
             await ctx.send("Kanal zaten temizlenecek")
+
+    @commands.command()
+    async def kaydetekle(self, ctx: commands.Context, id):
+        yd_id = str(ctx.channel.id)
+        if yd_id in yirmidort_values.keys():
+            try:
+                yirmidort_save = self.bot.get_channel(int(id))
+            except ExceptionGroup:
+                await ctx.send(f"Herhangi bir kanal id'si girilmemiş veya girilmiş id geçerli değil.")
+            finally:
+                yirmidort_values[yd_id] = id
+
+                with open(yirmidort_dir,"w") as yirmidort_jsonfile:
+                    json.dump(yirmidort_values,yirmidort_jsonfile)
+
+                await ctx.send(f"Bu kanalda kaydedilen herhangi bir mesaj, {yirmidort_save.name} kanalına kaydedilecek.")
+
+        else:
+            await ctx.send(f"Bu kanal 24 saatte bir silinmiyor, mesajları kaydetmek için bir neden yok..")
 
 
 async def setup(bot):
