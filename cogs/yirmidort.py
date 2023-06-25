@@ -65,7 +65,11 @@ class Yirmidort(commands.Cog):
             with open(yirmidort_dir,"w") as yirmidort_jsonfile:
                 json.dump(yirmidort_values,yirmidort_jsonfile)
 
-            await ctx.send(f"Başarılı, bu kanal her gün {starttime[0].strftime('%H:%M:%S')} saatinde temizlenecek")
+            if id is None:
+                await ctx.send(f"Başarılı, bu kanal her gün {starttime[0].strftime('%H:%M:%S')} saatinde temizlenecek")
+            else:
+                await ctx.send(f"Başarılı, bu kanal her gün {starttime[0].strftime('%H:%M:%S')} saatinde temizlenecek. \
+                               `dhkaydet` ile kaydedilen mesajlar {self.bot.get_channel(int(id)).name} kanalına gidecek")
 
         else:
             await ctx.send("Kanal zaten temizlenecek")
