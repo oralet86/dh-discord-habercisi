@@ -19,7 +19,6 @@ else:
 class Yirmidort(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.yirmidort_channels: list[discord.TextChannel] = [self.bot.get_channel(int(channel_id)) for channel_id in yirmidort_values.keys()]
         self.yirmidortsil.start()
 
     async def cog_unload(self):
@@ -30,30 +29,27 @@ class Yirmidort(commands.Cog):
 
         current_date = date.today()
 
-        if self.yirmidort_channels is not None:
+        for yirmidort_channel in [self.bot.get_channel(int(channel_id)) for channel_id in yirmidort_values.keys()]:
 
-            for yirmidort_channel in self.yirmidort_channels:
+            with open(f"arsiv/{yirmidort_channel.name}/{current_date}.txt","+a",encoding="utf-8") as arsiv_dosyasi:
 
-                with open(f"arsiv/{yirmidort_channel.name}/{current_date}.txt","+a",encoding="utf-8") as arsiv_dosyasi:
+                arsiv_dosyasi.seek(0, 2)
 
-                    arsiv_dosyasi.seek(0, 2)
+                async for message in yirmidort_channel.history(limit=10000):
 
-                    async for message in yirmidort_channel.history(limit=10000):
+                    if message.author.global_name is None:
+                        author_nickname = f"{message.author.name}#{message.author.discriminator}"
+                    else:
+                        author_nickname = message.author.global_name
 
-                        if message.author.global_name is None:
-                            author_nickname = f"{message.author.name}#{message.author.discriminator}"
-                        else:
-                            author_nickname = message.author.global_name
+                    if message.edited_at is None:
+                        arsiv_dosyasi.write(f"{message.created_at} | {author_nickname}: {message.content}\n")
+                    else:
+                        arsiv_dosyasi.write(f"{message.created_at} | {author_nickname}: {message.content} (Edited)\n")
 
-                        if message.edited_at is None:
-                            arsiv_dosyasi.write(f"{message.created_at} | {author_nickname}: {message.content}\n")
-                        else:
-                            arsiv_dosyasi.write(f"{message.created_at} | {author_nickname}: {message.content} (Edited)\n")
+                await yirmidort_channel.purge(bulk=True,limit=10000)
 
-
-                    await yirmidort_channel.purge(bulk=True,limit=10000)
-
-                    await yirmidort_channel.send("Kanal temizlendi :sunrise: :afro:")
+                await yirmidort_channel.send("Kanal temizlendi :sunrise: :afro:")
 
     @yirmidortsil.before_loop
     async def before_my_task(self):
