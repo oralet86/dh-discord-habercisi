@@ -1,20 +1,25 @@
 import discord
 from discord.ext import tasks, commands
 from datetime import time, date, timedelta, timezone
-from dotenv import load_dotenv
-from os import getenv
-from ast import literal_eval
-
-load_dotenv(".env")
-
-YIRMIDORT_IDLER = literal_eval(getenv("YIRMIDORT"))
+from os.path import exists, getsize, abspath, dirname
+import json
 
 starttime = [time(hour=5, minute=0, second=0, tzinfo=timezone(timedelta(hours=3)))]
+
+yirmidort_dir = f"{abspath(dirname(dirname(__file__)))}\\yirmidort.json"
+
+if exists(yirmidort_dir) and getsize(yirmidort_dir) != 0:
+    with open(yirmidort_dir,"r") as yirmidort_jsonfile:
+        yirmidort_values = json.load(yirmidort_jsonfile)
+else:
+    with open(yirmidort_dir,"w") as yirmidort_jsonfile:
+        json.dump({},yirmidort_jsonfile)
+        yirmidort_values = {}
 
 class Yirmidort(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.yirmidort_channels: list[discord.TextChannel] = [self.bot.get_channel(int(YIRMIDORT_ID)) for YIRMIDORT_ID in YIRMIDORT_IDLER]
+        self.yirmidort_channels: list[discord.TextChannel] = [self.bot.get_channel(int(channel_id)) for channel_id in yirmidort_values.keys()]
         self.yirmidortsil.start()
 
     async def cog_unload(self):
@@ -26,9 +31,10 @@ class Yirmidort(commands.Cog):
         current_date = date.today()
 
         if self.yirmidort_channels is not None:
+
             for yirmidort_channel in self.yirmidort_channels:
 
-                with open(f"arsiv/{current_date}_{yirmidort_channel.name}.txt","+a",encoding="utf-8") as arsiv_dosyasi:
+                with open(f"arsiv/{yirmidort_channel.name}/{current_date}.txt","+a",encoding="utf-8") as arsiv_dosyasi:
 
                     arsiv_dosyasi.seek(0, 2)
 
