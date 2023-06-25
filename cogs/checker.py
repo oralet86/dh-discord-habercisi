@@ -1,5 +1,6 @@
 from discord.ext import tasks, commands
 from cogs.checker_utils import sitecikar, siteekle, yenikonu
+import discord
 # from time import perf_counter
 
 TEST = 1100730493319774218 # Test kanalı
@@ -17,9 +18,11 @@ class Checker(commands.Cog):
         # start = perf_counter() Used for speed diagnosis
         goat = self.bot.get_channel(TEST)
 
-        async for i in yenikonu():
-            for ch in i["channels"]:
-                await self.bot.get_channel(ch).send(f"{i['baslik']} forumunda yeni konu! \nLink: https://forum.donanimhaber.com{i['link']}")
+        async for yk_dict in yenikonu(): # örnek yk_dict = {"link":yenikonu,"baslik":baslik,"channels":dictvalue["channels"]}
+
+            for yk_channel in yk_dict["channels"]:
+
+                await self.bot.get_channel(yk_channel).send(f"{yk_dict['baslik']} forumunda yeni konu! \nLink: https://forum.donanimhaber.com{yk_dict['link']}")
 
         await goat.send("Yeni konulara bakıyorum!")
 
