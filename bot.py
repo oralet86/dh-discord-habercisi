@@ -25,6 +25,7 @@ def run_bot() -> None:
         print(f"{bot.user} is ready!")
         await bot.load_extension("cogs.checker")
         await bot.load_extension("cogs.yirmidort")
+        await bot.load_extension("cogs.doviz")
 
     @bot.event
     async def on_command_error(ctx, error):
