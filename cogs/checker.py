@@ -20,8 +20,11 @@ class Checker(commands.Cog):
         async for yk_dict in yenikonu(): # örnek yk_dict = {"link":yenikonu,"baslik":baslik,"channels":dictvalue["channels"]}
 
             for yk_channel in yk_dict["channels"]:
-
-                await self.bot.get_channel(yk_channel).send(f"{yk_dict['baslik']} forumunda yeni konu! \nLink: https://forum.donanimhaber.com{yk_dict['link']}")
+                
+                try:
+                    await self.bot.get_channel(yk_channel).send(f"{yk_dict['baslik']} forumunda yeni konu! \nLink: https://forum.donanimhaber.com{yk_dict['link']}")
+                except AttributeError:
+                    continue
 
         await goat.send("Yeni konulara bakıyorum!")
 
@@ -74,5 +77,4 @@ class Checker(commands.Cog):
 
 
 async def setup(bot):
-    print("Checker cog yükleniyor...")
     await bot.add_cog(Checker(bot))
