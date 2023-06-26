@@ -4,7 +4,7 @@ from datetime import time, date, timedelta, timezone
 from os.path import exists, getsize, abspath, dirname
 import json
 
-starttime = [time(hour=3, minute=15, second=0, tzinfo=timezone(timedelta(hours=3)))]
+starttime = [time(hour=5, minute=0, second=0, tzinfo=timezone(timedelta(hours=3)))]
 
 yirmidort_dir = f"{abspath(dirname(dirname(__file__)))}\\yirmidort.json"
 
