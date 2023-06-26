@@ -1,4 +1,3 @@
-import discord
 from discord.ext import tasks, commands
 from datetime import time, date, timedelta, timezone
 from os.path import exists, getsize, abspath, dirname
