@@ -4,7 +4,7 @@ from datetime import time, date, timedelta, timezone
 from os.path import exists, getsize, abspath, dirname
 import json
 
-starttime = [time(hour=5, minute=0, second=0, tzinfo=timezone(timedelta(hours=3)))]
+starttime = [time(hour=3, minute=15, second=0, tzinfo=timezone(timedelta(hours=3)))]
 
 yirmidort_dir = f"{abspath(dirname(dirname(__file__)))}\\yirmidort.json"
 
@@ -28,12 +28,14 @@ class Yirmidort(commands.Cog):
 
     @tasks.loop(time=starttime)
     async def yirmidortsil(self):
+        print("Başlıyor!!")
 
         current_date = date.today()
 
         for yirmidort_channel in [self.bot.get_channel(int(channel_id)) for channel_id in yirmidort_values.keys()]:
+            print(f"Suanki kanal: {yirmidort_channel.name}")
 
-            with open(f"arsiv/{yirmidort_channel.name}/{current_date}.txt","+a",encoding="utf-8") as arsiv_dosyasi:
+            with open(f"arsiv/{yirmidort_channel.name}_{current_date}.txt","+a",encoding="utf-8") as arsiv_dosyasi:
 
                 arsiv_dosyasi.seek(0, 2)
 
