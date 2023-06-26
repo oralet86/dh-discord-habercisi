@@ -3,7 +3,7 @@ import aiohttp
 from discord.ext import commands
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
-from os.path import exists, getsize, abspath, dirname
+from os.path import exists, getsize
 from time import perf_counter
 
 
@@ -13,7 +13,7 @@ from time import perf_counter
 # values: values.json dosyasının içinden belleğe okunmuş veriler
 # dictvalue: bellekteki values'in içindeki her bir dictionary
 
-valuesdir = f"{abspath(dirname(dirname(__file__)))}\\values.json"
+valuesdir = f"values.json"
 
 if exists(valuesdir) and getsize(valuesdir) != 0:
     with open(valuesdir,"r") as valuesjson:

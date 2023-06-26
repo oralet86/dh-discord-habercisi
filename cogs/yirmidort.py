@@ -1,11 +1,11 @@
 from discord.ext import tasks, commands
 from datetime import time, date, timedelta, timezone
-from os.path import exists, getsize, abspath, dirname
+from os.path import exists, getsize
 import json
 
 starttime = [time(hour=5, minute=0, second=0, tzinfo=timezone(timedelta(hours=3)))]
 
-yirmidort_dir = f"{abspath(dirname(dirname(__file__)))}\\yirmidort.json"
+yirmidort_dir = f"yirmidort.json"
 
 yirmidort_values = None
 
