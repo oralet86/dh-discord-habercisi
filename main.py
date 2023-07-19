@@ -24,7 +24,7 @@ def run_bot() -> None:
     async def on_ready() -> None:
         print(f"{bot.user} is ready!")
         await bot.load_extension("cogs.checker")
-        await bot.load_extension("cogs.doviz")
+        await bot.load_extension("cogs.exchange")
 
     @bot.event
     async def on_command_error(ctx, error) -> None:
@@ -32,7 +32,7 @@ def run_bot() -> None:
         await ctx.send(f"Yanlış komut! Geçerli komutları ve kullanımlarını görmek için: {PREFIX}help")
 
     @bot.event
-    async def on_message(message):
+    async def on_message(message) -> None:
         if message.author == bot.user:
             return
 

@@ -4,13 +4,13 @@ from bs4 import BeautifulSoup
 import aiohttp
 
 
-class Doviz(commands.Cog):
+class Exchange(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
     @commands.command()
     async def doviz(self, ctx: commands.Context):
-        
+
         url = "https://dovizborsa.com/"
 
         async with aiohttp.ClientSession() as session:
@@ -43,4 +43,4 @@ class Doviz(commands.Cog):
 
 
 async def setup(bot):
-    await bot.add_cog(Doviz(bot))
+    await bot.add_cog(Exchange(bot))
