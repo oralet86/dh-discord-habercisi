@@ -8,19 +8,19 @@ from time import perf_counter
 
 
 # ANAHTAR KELIMELER :
-# valuesdir: values.json dosyasının absolute path'ı
-# valuesjson: values.json dosyasının kendisi
+# values_abs: values.json dosyasının absolute path'ı
+# values_json: values.json dosyasının kendisi
 # values: values.json dosyasının içinden belleğe okunmuş veriler
 # dictvalue: bellekteki values'in içindeki her bir dictionary
 
-valuesdir = f"values.json"
+values_abs = f"values.json"
 
-if exists(valuesdir) and getsize(valuesdir) != 0:
-    with open(valuesdir,"r") as valuesjson:
-        values = json.load(valuesjson)
+if exists(values_abs) and getsize(values_abs) != 0:
+    with open(values_abs,"r") as values_json:
+        values = json.load(values_json)
 else:
-    with open(valuesdir,"w") as valuesjson:
-        json.dump([],valuesjson)
+    with open(values_abs,"w") as values_json:
+        json.dump([],values_json)
         values = []
 
 
@@ -31,7 +31,7 @@ def main() -> None:
     start = perf_counter()
 
     for _ in range(BENCHMARK):
-        print(valuesdir)
+        print(values_abs)
     print(f"Completed Execution in {perf_counter() - start} seconds")
 
 
@@ -53,7 +53,7 @@ def getid(link: str) -> int:
     if idlocation != -1:
         return (link[idlocation+1:])
 
-    
+
 async def yenikonu():
 
     for dictvalue in values:
@@ -71,20 +71,20 @@ async def yenikonu():
                     yenikonu = konu.select_one("a").get("href") # Örnek olarak: /shopflix-guvenilir-mi--155719413
                     yenikonu_num = int(getid(yenikonu)) # Sadece sondaki sayıları almak için
 
-                    if yenikonu_num > dictvalue["latest"]: 
+                    if yenikonu_num > dictvalue["latest"]:
                         yenikonu_numlar.append(yenikonu_num)
                         yield {"link":yenikonu,"baslik":baslik,"channels":dictvalue["channels"]}
 
                 if len(yenikonu_numlar) != 0:
                     dictvalue["latest"] = max(yenikonu_numlar)
 
-    with open(valuesdir,"w") as valuesjson:
+    with open(values_abs,"w") as valuesjson:
         json.dump(values,valuesjson)
 
 
 async def siteekle(ctx: commands.Context, link: str) -> int:
+
     if await isvalid(link): # Verilen linkin gerçekten donanımhaberde geçerli bir siteye gidip gitmediğini test ediyor.
-        
         link = getid(link) # Linkin tamamına ihtiyacımız yok, sadece linkin son alfanumerik kısmı yeterli olduğu için onu kaydediyoruz.
 
         print("searching for link..") # valuesdir içerisinde uygun dict varsa giriyor.
@@ -96,13 +96,13 @@ async def siteekle(ctx: commands.Context, link: str) -> int:
 
                 else:
                     dictvalue["channels"].append(ctx.channel.id) # eğer kanal id'si listede yoksa, listeye ekliyor.
-                    with open(valuesdir,"w") as valueswrite:
+                    with open(values_abs,"w") as valueswrite:
                         json.dump(values,valueswrite)
                     return 0
 
         print("link not found!")
         values.append({"link":link,"channels":[ctx.channel.id],"latest":0})
-        with open(valuesdir,"w") as valueswrite:
+        with open(values_abs,"w") as valueswrite:
             json.dump(values,valueswrite)
         return 0
 
@@ -116,7 +116,7 @@ async def sitecikar(ctx: commands.Context, link:str= None) -> int:
             if ctx.channel.id in dictvalue["channels"]:
                 dictvalue["channels"].remove(ctx.channel.id)
 
-        with open(valuesdir,"w") as jsonfile:
+        with open(values_abs,"w") as jsonfile:
             json.dump(values,jsonfile)
         return 0
 
@@ -128,17 +128,17 @@ async def sitecikar(ctx: commands.Context, link:str= None) -> int:
 
                 if ctx.channel.id in dictvalue["channels"]:
                     dictvalue["channels"].remove(ctx.channel.id)
-                    
-                    with open(valuesdir,"w") as jsonfile:
+
+                    with open(values_abs,"w") as jsonfile:
                         json.dump(values,jsonfile)
                     return 1
-                
+
                 else:
                     return 2
 
     return 2
-        
-                        
+
+
 
 if __name__ == '__main__':
     main()

@@ -4,7 +4,7 @@ from cogs.checker_utils import sitecikar, siteekle, yenikonu
 
 TEST = 1100730493319774218 # Test kanalı
 
-class Checker(commands.Cog):
+class ForumChecker(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.check.start()
@@ -15,18 +15,18 @@ class Checker(commands.Cog):
     @tasks.loop(seconds=60)
     async def check(self):
         # start = perf_counter() Used for speed diagnosis
-        goat = self.bot.get_channel(TEST)
+        test_channel = self.bot.get_channel(TEST)
 
         async for yk_dict in yenikonu(): # örnek yk_dict = {"link":yenikonu,"baslik":baslik,"channels":dictvalue["channels"]}
 
             for yk_channel in yk_dict["channels"]:
-                
+
                 try:
                     await self.bot.get_channel(yk_channel).send(f"{yk_dict['baslik']} forumunda yeni konu! \nLink: https://forum.donanimhaber.com{yk_dict['link']}")
                 except AttributeError:
                     continue
 
-        await goat.send("Yeni konulara bakıyorum!")
+        await test_channel.send("Yeni konulara bakıyorum!")
 
         # print(f"Completed Execution in {perf_counter() - start} seconds")
 
@@ -77,4 +77,4 @@ class Checker(commands.Cog):
 
 
 async def setup(bot):
-    await bot.add_cog(Checker(bot))
+    await bot.add_cog(ForumChecker(bot))
