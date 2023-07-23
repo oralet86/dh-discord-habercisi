@@ -9,7 +9,7 @@ except ModuleNotFoundError:
 
 TEST = 1100730493319774218 # Test channel
 
-forum.load_subforums() # Used to load subforum data from the json
+forum.Subforum.load_subforums() # Used to load subforum data from the json
 
 def main() -> None:
   for sf in forum.Subforum.subforum_list:

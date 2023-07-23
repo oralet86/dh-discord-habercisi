@@ -10,7 +10,7 @@ FORUMS_FILE_NAME = "forums.json"
 
 
 def main() -> None:
-  load_subforums()
+  Subforum.load_subforums()
 
   for sf in Subforum.subforum_list:
     print(f"ID: {sf.id}, Channels: {sf.channels}, Latest: {sf.latest}")
@@ -20,9 +20,6 @@ def main() -> None:
     posts = asyncio.run(sf.check_posts())
     for post in posts:
       print(f"href: {post.href}")
-  
-  print("Subforums saved!")
-  save_subforums()
 
 
 def getid(link: str) -> int:
@@ -61,7 +58,8 @@ class Subforum():
         for post in post_divs:
           post_href = post.select_one("a").get("href")               # Get the href, for example: /shopflix-guvenilir-mi--155719413
 
-          # print(f"post href: {getid(post_href)}, self.latest: {self.latest}, should the post be added: {int(getid(post_href))>self.latest}") # For diagnostics
+          # This is for diagnostics
+          # print(f"post href: {getid(post_href)}, self.latest: {self.latest}, should the post be added: {int(getid(post_href))>self.latest}")
 
           if int(getid(post_href)) > self.latest:
             latest_ids.append(int(getid(post_href)))
@@ -69,7 +67,7 @@ class Subforum():
 
     if len(latest_ids) != 0:
       self.latest = max(latest_ids)
-      save_subforums()
+      Subforum.save_subforums()
 
     return posts
 
@@ -85,12 +83,12 @@ class Subforum():
           return 2
         else:
           subforum.channels.append(channel_id)
-          save_subforums()
+          Subforum.save_subforums()
           return 0
 
     try:
       new_subforum = Subforum(link)
-      save_subforums()
+      Subforum.save_subforums()
       return 0
     except ValueError:
       return 1
@@ -102,7 +100,7 @@ class Subforum():
         if channel_id in subforum.channels:
           subforum.channels.remove(channel_id)
 
-      save_subforums()
+      Subforum.save_subforums()
       return 0
 
     else:
@@ -111,10 +109,31 @@ class Subforum():
           if channel_id in subforum.channels:
             subforum.channels.remove(channel_id)
 
-            save_subforums()
+            Subforum.save_subforums()
             return 1
 
     return 2
+  
+  @classmethod
+  def load_subforums(cls) -> list["Subforum"]:
+    if exists(FORUMS_FILE_NAME) and getsize(FORUMS_FILE_NAME) != 0:        # If the .json file does exist, it loads in the data from that file.
+      with open(FORUMS_FILE_NAME,"r") as json_file:
+        for subforum_data in json.load(json_file):
+          subforum = Subforum(link=subforum_data['id'],channels=subforum_data['channels'],latest=int(subforum_data['latest']),is_startup=1,title=subforum_data['title'])
+
+    else:
+      with open(FORUMS_FILE_NAME,"w") as json_file:
+        json.dump([],json_file)
+
+  @classmethod
+  def save_subforums(cls) -> None:
+    save_file = []
+
+    for subforum in Subforum.subforum_list:
+      save_file.append({"id": subforum.id, "channels": subforum.channels, "latest": subforum.latest, "title": subforum.title})
+
+    with open(FORUMS_FILE_NAME,"w") as json_file:
+      json.dump(save_file,json_file, indent=2)
 
 
 class ForumPost():
@@ -139,27 +158,6 @@ class ForumPost():
         soup = BeautifulSoup(await response.text(),"html.parser")
 
         self.title = soup.select_one("h1",class_="kl-basligi upInfinite").text.strip()
-
-
-def load_subforums() -> list["Subforum"]:
-  if exists(FORUMS_FILE_NAME) and getsize(FORUMS_FILE_NAME) != 0:        # If the .json file does exist, it loads in the data from that file.
-    with open(FORUMS_FILE_NAME,"r") as json_file:
-      for subforum_data in json.load(json_file):
-        subforum = Subforum(link=subforum_data['id'],channels=subforum_data['channels'],latest=int(subforum_data['latest']),is_startup=1,title=subforum_data['title'])
-
-  else:
-    with open(FORUMS_FILE_NAME,"w") as json_file:
-      json.dump([],json_file)
-
-
-def save_subforums() -> None:
-  save_file = []
-
-  for subforum in Subforum.subforum_list:
-    save_file.append({"id": subforum.id, "channels": subforum.channels, "latest": subforum.latest, "title": subforum.title})
-
-  with open(FORUMS_FILE_NAME,"w") as json_file:
-    json.dump(save_file,json_file, indent=2)
 
 
 async def isvalid(link) -> bool:  # Checks if the link leads to a valid DonanımHaber forum
