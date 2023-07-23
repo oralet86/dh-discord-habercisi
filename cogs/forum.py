@@ -10,7 +10,7 @@ FORUMS_FILE_NAME = "forums.json"
 
 
 def main() -> None:
-  Subforum.load_subforums()
+  """Subforum.load_subforums()
 
   for sf in Subforum.subforum_list:
     print(f"ID: {sf.id}, Channels: {sf.channels}, Latest: {sf.latest}")
@@ -19,7 +19,11 @@ def main() -> None:
 
     posts = asyncio.run(sf.check_posts())
     for post in posts:
-      print(f"href: {post.href}")
+      print(f"href: {post.href}")"""
+
+  fpost = asyncio.run(ForumPost.create("/hic-arkadasim-yok-aydin-da-takilmak-isteyen-var-mi--156383314"))
+
+  print(fpost.author, fpost.avatar, fpost.content)
 
 
 def getid(link: str) -> int:
@@ -113,17 +117,19 @@ class Subforum():
             return 1
 
     return 2
-  
+
+
   @classmethod
   def load_subforums(cls) -> list["Subforum"]:
     if exists(FORUMS_FILE_NAME) and getsize(FORUMS_FILE_NAME) != 0:        # If the .json file does exist, it loads in the data from that file.
       with open(FORUMS_FILE_NAME,"r") as json_file:
         for subforum_data in json.load(json_file):
-          subforum = Subforum(link=subforum_data['id'],channels=subforum_data['channels'],latest=int(subforum_data['latest']),is_startup=1,title=subforum_data['title'])
-
+          subforum = Subforum(link=subforum_data['id'],channels=subforum_data['channels'],
+                              latest=int(subforum_data['latest']),is_startup=1,title=subforum_data['title'])
     else:
       with open(FORUMS_FILE_NAME,"w") as json_file:
         json.dump([],json_file)
+
 
   @classmethod
   def save_subforums(cls) -> None:
@@ -157,7 +163,14 @@ class ForumPost():
       async with session.get(f'https://forum.donanimhaber.com{self.href}') as response:
         soup = BeautifulSoup(await response.text(),"html.parser")
 
-        self.title = soup.select_one("h1",class_="kl-basligi upInfinite").text.strip()
+        self.title = soup.find("h1",class_="kl-basligi upInfinite").text.strip()
+        author_info = soup.find("aside",class_="ki-cevapsahibi")
+        self.author = author_info.find("div",class_="ki-kullaniciadi member-info").find("a").find("b").text
+        try:
+          self.avatar = author_info.find("div",class_="content-holder").find("a",class_="ki-avatar").find("img").attrs["src"]
+        except AttributeError:
+          pass
+        # self.content = soup.find("div",class_="ki-cevapicerigi").find("div",class_="ql-editor readonly",recursive=True).find("p").text
 
 
 async def isvalid(link) -> bool:  # Checks if the link leads to a valid DonanımHaber forum

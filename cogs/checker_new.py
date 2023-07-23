@@ -76,9 +76,11 @@ class ForumChecker(commands.Cog):
           await ctx.send(f"`{link}` forumu `{ctx.channel.name}` kanalında zaten takip edilmiyor.")
 
 
-def make_embed(post):
-  embed = discord.Embed(title="Yeni Konu!", color=discord.Colour.blurple())
-
+def make_embed(post: forum.ForumPost) -> discord.Embed:
+  embed = discord.Embed(title="Yeni Konu!", color=discord.Colour.blurple(), description=post.author)
+  embed.add_field(name=post.title,value=".") # post.content is WIP
+  if post.avatar is not None:
+    embed.set_thumbnail(url=post.avatar)
   return embed
 
 
