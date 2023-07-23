@@ -78,7 +78,8 @@ class ForumChecker(commands.Cog):
 
 def make_embed(post: forum.ForumPost) -> discord.Embed:
   embed = discord.Embed(title="Yeni Konu!", color=discord.Colour.blurple(), description=post.author)
-  embed.add_field(name=post.title,value=".") # post.content is WIP
+  value = post.content if len(post.content) < 512 else f"{post.content[:512]}..."    # Crop any content over 512 characters to save screenspace
+  embed.add_field(name=post.title,value=value)
   if post.avatar is not None:
     embed.set_thumbnail(url=post.avatar)
   return embed

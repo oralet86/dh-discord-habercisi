@@ -10,20 +10,21 @@ FORUMS_FILE_NAME = "forums.json"
 
 
 def main() -> None:
-  """Subforum.load_subforums()
+  Subforum.load_subforums()
 
   for sf in Subforum.subforum_list:
     print(f"ID: {sf.id}, Channels: {sf.channels}, Latest: {sf.latest}")
 
     print("---------------------------------------------------------")
 
-    posts = asyncio.run(sf.check_posts())
+    posts:List["ForumPost"] = asyncio.run(sf.check_posts())
     for post in posts:
-      print(f"href: {post.href}")"""
+      print(f"href: {post.href} author: {post.author} avatar: {post.avatar} title: {post.title}")
+      print(f"content: {post.content}")
 
   fpost = asyncio.run(ForumPost.create("/hic-arkadasim-yok-aydin-da-takilmak-isteyen-var-mi--156383314"))
 
-  print(fpost.author, fpost.avatar, fpost.content)
+  print(fpost.author, fpost.avatar, f"content:{fpost.content}")
 
 
 def getid(link: str) -> int:
@@ -170,7 +171,11 @@ class ForumPost():
           self.avatar = author_info.find("div",class_="content-holder").find("a",class_="ki-avatar").find("img").attrs["src"]
         except AttributeError:
           pass
-        # self.content = soup.find("div",class_="ki-cevapicerigi").find("div",class_="ql-editor readonly",recursive=True).find("p").text
+        content_json = soup.find("script",type="application/ld+json").text    # The easiest way to get the post content seems to be through this element
+        content_start = content_json.index("articleBody")+15                  # But this element consists of a very large json file
+        content_end =  content_json.index("articleS")-4                       # And since it wouldn't make sense to parse everything just to get one thing
+        self.content = content_json[content_start:content_end]                # We just use string manipulation
+                                                                              # The +15 and -4 is to remove some extra characters that index() leaves in
 
 
 async def isvalid(link) -> bool:  # Checks if the link leads to a valid DonanımHaber forum
