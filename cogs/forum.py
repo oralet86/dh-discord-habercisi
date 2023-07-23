@@ -10,21 +10,8 @@ FORUMS_FILE_NAME = "forums.json"
 
 
 def main() -> None:
-  Subforum.load_subforums()
-
-  for sf in Subforum.subforum_list:
-    print(f"ID: {sf.id}, Channels: {sf.channels}, Latest: {sf.latest}")
-
-    print("---------------------------------------------------------")
-
-    posts:List["ForumPost"] = asyncio.run(sf.check_posts())
-    for post in posts:
-      print(f"href: {post.href} author: {post.author} avatar: {post.avatar} title: {post.title}")
-      print(f"content: {post.content}")
-
-  fpost = asyncio.run(ForumPost.create("/hic-arkadasim-yok-aydin-da-takilmak-isteyen-var-mi--156383314"))
-
-  print(fpost.author, fpost.avatar, f"content:{fpost.content}")
+  pass
+  # Put your tests here
 
 
 def getid(link: str) -> int:
