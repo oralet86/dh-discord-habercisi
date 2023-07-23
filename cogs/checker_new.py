@@ -37,10 +37,13 @@ class ForumChecker(commands.Cog):
       new_posts = await subforum.check_posts()
 
       for new_post in new_posts:
+        embed = make_embed(new_post)
+        view = make_view(new_post)
+
         for channel_id in subforum.channels:
           channel: discord.TextChannel = self.bot.get_channel(channel_id)
 
-          await channel.send(f"{subforum.title} Forumlarında yeni konu!\nLink: https://forum.donanimhaber.com{new_post.href}")
+          await channel.send(embed=embed,view=view)
       
 
     # print(f"Completed Execution in {perf_counter() - start} seconds")
@@ -71,6 +74,21 @@ class ForumChecker(commands.Cog):
           await ctx.send(f"İşlem başarılı! Artık `{ctx.channel.name}` kanalında `{link}` forumu takip edilmeyecek.")
       case 2:
           await ctx.send(f"`{link}` forumu `{ctx.channel.name}` kanalında zaten takip edilmiyor.")
+
+
+def make_embed(post):
+  embed = discord.Embed(title="Yeni Konu!", color=discord.Colour.blurple())
+
+  return embed
+
+
+def make_view(post) -> discord.ui.View:
+  computer_button = discord.ui.Button(style=discord.ButtonStyle.link, label="PC Link",url=f"https://forum.donanimhaber.com{post.href}")
+  mobile_button = discord.ui.Button(style=discord.ButtonStyle.link, label="Mobil Link",url=f"https://mobile.donanimhaber.com{post.href}")
+  view = discord.ui.View()
+  view.add_item(computer_button)
+  view.add_item(mobile_button)
+  return view
 
 
 if __name__ == '__main__':
