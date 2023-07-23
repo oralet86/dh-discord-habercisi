@@ -158,7 +158,7 @@ async def yenikonu():
                     dictvalue["latest"] = max(yenikonu_numlar)
 
     with open(values_abs,"w") as valuesjson:
-        json.dump(values,valuesjson)
+        json.dump(values,valuesjson,indent=2)
 
 
 async def siteekle(ctx: commands.Context, link: str) -> int:

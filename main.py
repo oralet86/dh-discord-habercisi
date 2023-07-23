@@ -23,7 +23,7 @@ def run_bot() -> None:
     @bot.event
     async def on_ready() -> None:
         print(f"{bot.user} is ready!")
-        await bot.load_extension("cogs.checker")
+        await bot.load_extension("cogs.checker_new")
         await bot.load_extension("cogs.exchange")
 
     @bot.event
