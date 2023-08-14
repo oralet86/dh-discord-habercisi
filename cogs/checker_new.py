@@ -3,7 +3,7 @@ import discord
 try:
   import cogs.forum as forum
 except ModuleNotFoundError:
-   import forum
+  import forum
 
 # from time import perf_counter
 
@@ -52,7 +52,6 @@ class ForumChecker(commands.Cog):
   @check.before_loop
   async def before_my_task(self) -> None:
     await self.bot.wait_until_ready()
-
 
   @commands.command()
   async def ekle(self, ctx: commands.Context, link:str=None) -> None:
