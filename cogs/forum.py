@@ -22,7 +22,7 @@ def getid(link: str) -> int:
 
 
 class Subforum():
-  subforum_list = []
+  subforum_list: List["Subforum"] = []
 
   def __init__(self, link, channels=[], latest=0, is_startup=0, title=None) -> None:
     if is_startup or asyncio.run(isvalid(link)):
@@ -159,9 +159,9 @@ class ForumPost():
         except AttributeError:
           pass
         content_json = soup.find("script",type="application/ld+json").text    # The easiest way to get the post content seems to be through this element
-        content_start = content_json.index("articleBody")+15                  # But this element consists of a very large json file
+        content_start = content_json.index("articleBody")+14                  # But this element consists of a very large json file
         content_end =  content_json.index("articleS")-4                       # And since it wouldn't make sense to parse everything just to get one thing
-        self.content = content_json[content_start:content_end]                # We just use string manipulation
+        self.content = content_json[content_start:content_end].strip()        # We just use string manipulation
                                                                               # The +15 and -4 is to remove some extra characters that index() leaves in
 
 
