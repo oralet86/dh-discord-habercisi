@@ -160,7 +160,7 @@ class ForumPost():
           pass
         content_json = soup.find("script",type="application/ld+json").text    # The easiest way to get the post content seems to be through this element
         content_start = content_json.index("articleBody")+14                  # But this element consists of a very large json file
-        content_end =  content_json.index("articleS")-4                       # And since it wouldn't make sense to parse everything just to get one thing
+        content_end =  content_json.index("articleS")-3                       # And since it wouldn't make sense to parse everything just to get one thing
         self.content = content_json[content_start:content_end].strip()        # We just use string manipulation
                                                                               # The +15 and -4 is to remove some extra characters that index() leaves in
 
