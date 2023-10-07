@@ -65,7 +65,7 @@ class ForumChecker(commands.Cog):
 
 
   @commands.command()
-  async def cikar(self, ctx: commands.Context, link:str= None) -> None:
+  async def cikar(self, ctx: commands.Context, link:str=None) -> None:
     match await forum.Subforum.remove_channel(ctx.channel.id, link):
       case 0:
           await ctx.send(f"İşlem başarılı! Artık `{ctx.channel.name}` kanalında herhangi bir forum takip edilmeyecek.")

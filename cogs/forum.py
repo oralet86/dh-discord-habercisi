@@ -79,7 +79,7 @@ class Subforum():
           return 0
 
     try:
-      new_subforum = Subforum(link)
+      Subforum(link)
       Subforum.save_subforums()
       return 0
     except ValueError:
@@ -112,8 +112,8 @@ class Subforum():
     if exists(FORUMS_FILE_NAME) and getsize(FORUMS_FILE_NAME) != 0:        # If the .json file does exist, it loads in the data from that file.
       with open(FORUMS_FILE_NAME,"r") as json_file:
         for subforum_data in json.load(json_file):
-          subforum = Subforum(link=subforum_data['id'],channels=subforum_data['channels'],
-                              latest=int(subforum_data['latest']),is_startup=1,title=subforum_data['title'])
+          Subforum(link=subforum_data['id'],channels=subforum_data['channels'],
+                  latest=int(subforum_data['latest']),is_startup=1,title=subforum_data['title'])
     else:
       with open(FORUMS_FILE_NAME,"w") as json_file:
         json.dump([],json_file)
