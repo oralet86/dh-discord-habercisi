@@ -29,22 +29,27 @@ class ForumChecker(commands.Cog):
   @tasks.loop(seconds=60)
   async def check(self) -> None:
     # start = perf_counter() Used for speed diagnosis
-    test_channel = self.bot.get_channel(TEST)
+    try:
+      test_channel = self.bot.get_channel(TEST)
+      await test_channel.send("Yeni konulara bakıyorum!")
+    except discord.errors.DiscordServerError as e:
+      print(f"HATA: {e}")
 
-    await test_channel.send("Yeni konulara bakıyorum!")
+    try:
+      for subforum in forum.Subforum.subforum_list:
+        new_posts = await subforum.check_posts()
 
-    for subforum in forum.Subforum.subforum_list:
-      new_posts = await subforum.check_posts()
+        for new_post in new_posts:
+          embed = make_embed(new_post)
+          view = make_view(new_post)
 
-      for new_post in new_posts:
-        embed = make_embed(new_post)
-        view = make_view(new_post)
+          for channel_id in subforum.channels:
+            channel: discord.TextChannel = self.bot.get_channel(channel_id)
 
-        for channel_id in subforum.channels:
-          channel: discord.TextChannel = self.bot.get_channel(channel_id)
+            await channel.send(embed=embed,view=view)
+    except Exception as e:
+      await test_channel.send(f"Bir hata oluştu. Hata: {e}")
 
-          await channel.send(embed=embed,view=view)
-      
 
     # print(f"Completed Execution in {perf_counter() - start} seconds")
 
