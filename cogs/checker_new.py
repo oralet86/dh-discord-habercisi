@@ -32,7 +32,7 @@ class ForumChecker(commands.Cog):
     try:
       test_channel = self.bot.get_channel(TEST)
       await test_channel.send("Yeni konulara bakıyorum!")
-    except discord.errors.DiscordServerError as e:
+    except Exception as e:
       print(f"HATA: {e}")
 
     try:
