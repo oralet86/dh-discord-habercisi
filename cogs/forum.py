@@ -33,7 +33,7 @@ class Subforum():
 
 
   async def get_subforum_info(self, link, channels=[], latest=0, title=None) -> None:
-    if asyncio.run(isvalid(link)):
+    if await isvalid(link):
       self.id = getid(link)
       self.channels = channels
       self.latest = latest
@@ -87,7 +87,7 @@ class Subforum():
           return 0
 
     try:
-      Subforum.create(link)
+      await Subforum.create(link)
       Subforum.save_subforums()
       return 0
     except ValueError:
@@ -129,7 +129,7 @@ class Subforum():
       with open(FORUMS_FILE_NAME,"r") as json_file:
         for subforum_data in json.load(json_file):
           Subforum.load_from_file(id=subforum_data['id'],channels=subforum_data['channels'],
-                  latest=int(subforum_data['latest']),is_startup=1,title=subforum_data['title'])
+                  latest=int(subforum_data['latest']),title=subforum_data['title'])
     else:
       with open(FORUMS_FILE_NAME,"w") as json_file:
         json.dump([],json_file)
