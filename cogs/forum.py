@@ -1,7 +1,6 @@
 from os.path import exists, getsize
 from bs4 import BeautifulSoup
 from typing import List
-import asyncio
 import aiohttp
 import json
 
@@ -154,10 +153,10 @@ class Subforum():
   
   
   @classmethod
-  async def get_list(cls, id) -> List:
+  async def get_list(cls, id) -> List["Subforum"]:
     result = []
     for subforum in Subforum.subforum_list:
-      if id == subforum.id:
+      if id in subforum.channels:
         result.append(subforum)
     
     return result
