@@ -24,10 +24,18 @@ def getid(link: str) -> int:
 class Subforum():
   subforum_list: List["Subforum"] = []
 
-  def __init__(self, link, channels=[], latest=0, is_startup=0, title=None) -> None:
-    if is_startup or asyncio.run(isvalid(link)):
-      self.id = link if is_startup else getid(link)               # Since the id is already stored,
-      self.channels = channels                                    # link is actually an id if it's loading up data from a json file
+  def __init__(self) -> None:
+      self.id = None
+      self.channels = None
+      self.latest = None
+      self.title = None
+      Subforum.subforum_list.append(self)
+
+
+  async def get_subforum_info(self, link, channels=[], latest=0, title=None) -> None:
+    if asyncio.run(isvalid(link)):
+      self.id = getid(link)
+      self.channels = channels
       self.latest = latest
       self.title = title                                          # Title is actually loaded when checking for new posts so we don't request the same page twice
       Subforum.subforum_list.append(self)
@@ -79,7 +87,7 @@ class Subforum():
           return 0
 
     try:
-      Subforum(link)
+      Subforum.create(link)
       Subforum.save_subforums()
       return 0
     except ValueError:
@@ -106,13 +114,21 @@ class Subforum():
 
     return 2
 
+  @classmethod
+  def load_from_file(cls, id, channels=[], latest=0, title=None) -> None:
+    subforum = Subforum()
+    subforum.id = id
+    subforum.channels = channels
+    subforum.latest = latest
+    subforum.title = title
+
 
   @classmethod
   def load_subforums(cls) -> list["Subforum"]:
     if exists(FORUMS_FILE_NAME) and getsize(FORUMS_FILE_NAME) != 0:        # If the .json file does exist, it loads in the data from that file.
       with open(FORUMS_FILE_NAME,"r") as json_file:
         for subforum_data in json.load(json_file):
-          Subforum(link=subforum_data['id'],channels=subforum_data['channels'],
+          Subforum.load_from_file(id=subforum_data['id'],channels=subforum_data['channels'],
                   latest=int(subforum_data['latest']),is_startup=1,title=subforum_data['title'])
     else:
       with open(FORUMS_FILE_NAME,"w") as json_file:
@@ -128,6 +144,13 @@ class Subforum():
 
     with open(FORUMS_FILE_NAME,"w") as json_file:
       json.dump(save_file,json_file, indent=2)
+  
+
+  @classmethod
+  async def create(cls, link) -> None:  # Got to use this to create new objects because of stupid async logic
+    subforum = Subforum()
+    await subforum.get_subforum_info(link=link)
+    return subforum
 
 
 class ForumPost():
@@ -140,7 +163,7 @@ class ForumPost():
 
 
   @classmethod
-  async def create(cls, href) -> None:  # Got to use this to create new objects because of stupid async logic
+  async def create(cls, href) -> None:  # Got to use this to create new objects because of stupid async logic x2
     forumpost = ForumPost(href)
     await forumpost.get_post_info()
     return forumpost
