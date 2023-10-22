@@ -60,7 +60,8 @@ class ForumChecker(commands.Cog):
 
   @commands.command()
   async def ekle(self, ctx: commands.Context, link:str=None) -> None:
-    match await forum.Subforum.add_channel(ctx.channel.id, link):
+    result = await forum.Subforum.add_channel(ctx.channel.id, link)
+    match result:
       case 0:
           await ctx.send(f"İşlem başarılı! Artık `{link}` forumunda yeni bir konu açıldığında `{ctx.channel.name}` kanalına mesaj atılacak.")
       case 1:
@@ -71,7 +72,8 @@ class ForumChecker(commands.Cog):
 
   @commands.command()
   async def cikar(self, ctx: commands.Context, link:str=None) -> None:
-    match await forum.Subforum.remove_channel(ctx.channel.id, link):
+    result = await forum.Subforum.remove_channel(ctx.channel.id, link) 
+    match result:
       case 0:
           await ctx.send(f"İşlem başarılı! Artık `{ctx.channel.name}` kanalında herhangi bir forum takip edilmeyecek.")
       case 1:
