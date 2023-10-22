@@ -90,7 +90,7 @@ class ForumChecker(commands.Cog):
     for subforum in result:
       return_str+=f"\n- {subforum.title}"
     
-    ctx.send(return_str)
+    await ctx.send(return_str)
 
 
 def make_embed(post: forum.ForumPost) -> discord.Embed:
