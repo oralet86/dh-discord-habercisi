@@ -88,7 +88,9 @@ class ForumChecker(commands.Cog):
     return_str = f"Bu sohbette takip edilen altforum sayısı: {len(result)}"
 
     for subforum in result:
-      return_str+=f"\n- {subforum.title}"
+      return_str+=f"\n- Başlık: `{subforum.title}`, Link: `https://forum.donanimhaber.com/burasi-aslinda-onemsiz--{subforum.id}`"
+    
+    return_str+=f"\nHerhangi bir altforumu takip etmeyi 'dhcikar `forum linki`' komutu ile bırakabilirsiniz."
     
     await ctx.send(return_str)
 
