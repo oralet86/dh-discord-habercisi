@@ -151,6 +151,16 @@ class Subforum():
     subforum = Subforum()
     await subforum.get_subforum_info(link=link)
     return subforum
+  
+  
+  @classmethod
+  async def get_list(cls, id) -> List:
+    result = []
+    for subforum in Subforum.subforum_list:
+      if id == subforum.id:
+        result.append(subforum)
+    
+    return result
 
 
 class ForumPost():

@@ -80,6 +80,17 @@ class ForumChecker(commands.Cog):
           await ctx.send(f"İşlem başarılı! Artık `{ctx.channel.name}` kanalında `{link}` forumu takip edilmeyecek.")
       case 2:
           await ctx.send(f"`{link}` forumu `{ctx.channel.name}` kanalında zaten takip edilmiyor.")
+  
+
+  @commands.command()
+  async def liste(self, ctx: commands.Context) -> None:
+    result = await forum.Subforum.get_list(ctx.channel.id)
+    return_str = f"Bu sohbette takip edilen altforum sayısı: {len(result)}"
+
+    for subforum in result:
+      return_str+=f"\n- {subforum.title}"
+    
+    ctx.send(return_str)
 
 
 def make_embed(post: forum.ForumPost) -> discord.Embed:
