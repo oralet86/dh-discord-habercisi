@@ -13,30 +13,47 @@ def main() -> None:
   # Put your tests here
 
 
-def getid(link: str) -> int:
-  id_location = link.rfind("-")
+def getid(link: str) -> (int | str):
+  dash = link.rfind("-")
+  if dash == -1:
+    raise ValueError(f"Couldn't find id of link: {link}")
 
-  if id_location != -1:
-    return (link[id_location+1:])
+  link = link[dash+1:]
+
+  question = link.rfind("?")
+  if question != -1:
+    link = link[:question]
+  
+  try:
+    return int(link)
+  except ValueError:
+    return link
 
 
 class Subforum():
   subforum_list: List["Subforum"] = []
 
+
   def __init__(self) -> None:
-      self.id = None
-      self.channels = None
-      self.latest = None
-      self.title = None
-      Subforum.subforum_list.append(self)
+    self.id = None
+    self.channels = None
+    self.latest = None
+    self.title = None
+    Subforum.subforum_list.append(self)
+  
+
+  def remove(self) -> None:
+    Subforum.subforum_list.remove(self)
+    del self
+    Subforum.save_subforums()
 
 
   async def get_subforum_info(self, link, channels=[], latest=0, title=None) -> None:
     if await isvalid(link):
       self.id = getid(link)
-      self.channels = channels
-      self.latest = latest
-      self.title = title                                          # Title is actually loaded when checking for new posts so we don't request the same page twice
+      self.channels: List[int] = channels
+      self.latest: int = latest
+      self.title: str = title                                          # Title is actually loaded when checking for new posts so we don't request the same page twice
       Subforum.subforum_list.append(self)
     else:
       raise ValueError("Invalid forum link")
@@ -71,7 +88,7 @@ class Subforum():
     return posts
 
 
-  async def add_channel(channel_id, link):
+  async def add_channel(channel_id, link) -> int:
     if link is None:
       return 1
     id = getid(link)
@@ -93,7 +110,7 @@ class Subforum():
       return 1
 
 
-  async def remove_channel(channel_id, link:str= None):
+  async def remove_channel(channel_id, link:str= None) -> int:
     if link is None:
       for subforum in Subforum.subforum_list:
         if channel_id in subforum.channels:
@@ -112,6 +129,7 @@ class Subforum():
             return 1
 
     return 2
+
 
   @classmethod
   def load_from_file(cls, id, channels=[], latest=0, title=None) -> None:
