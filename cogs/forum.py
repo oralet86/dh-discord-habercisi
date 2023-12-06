@@ -9,25 +9,35 @@ FORUMS_FILE_NAME = "forums.json"
 
 
 def main() -> None:
-  pass
+  print(getid("/apple-iphone-firsatlari-tum-modeller-ana-konu--121084032?isLink=true"))
+  print(format("/apple-iphone-firsatlari-tum-modeller-ana-konu--121084032?isLink=true"))
   # Put your tests here
 
 
 def getid(link: str) -> (int | str):
-  dash = link.rfind("-")
-  if dash == -1:
-    raise ValueError(f"Couldn't find id of link: {link}")
+  try:
+    dash = link.rfind("-")
+    if dash == -1:
+      raise ValueError(f"Couldn't find id of link: {link}")
 
-  link = link[dash+1:]
+    link = link[dash+1:]
 
-  question = link.rfind("?")
-  if question != -1:
-    link = link[:question]
+    question = link.rfind("?")
+    if question != -1:
+      link = link[:question]
+  except Exception as ex:
+    raise Exception(f"getid/{link}/{ex}")
   
   try:
     return int(link)
   except ValueError:
     return link
+
+def format(link: str) -> (str | None):
+  question_index = link.rfind("?")
+  dash_index = link.rfind("--")
+  if question_index != -1 and question_index > dash_index:
+    return link[:question_index]
 
 
 class Subforum():
@@ -69,17 +79,31 @@ class Subforum():
 
         if self.title is None:
           self.title = soup.title.text[:soup.title.text.find(" Forumları")]
+        
+        try:
+          post_divs = soup(class_="kl-icerik-satir yenikonu",limit=15) # Look at the top 15 posts
+        except Exception as e:
+          raise Exception(f"check_posts/creating post divs/{e}")
 
-        post_divs = soup(class_="kl-icerik-satir yenikonu",limit=15) # Look at the top 15 posts
         for post in post_divs:
-          post_href = post.select_one("a").get("href")               # Get the href, for example: /shopflix-guvenilir-mi--155719413
+          try:
+            post_href: str = post.select_one("a").get("href")               # Get the href, for example: /shopflix-guvenilir-mi--155719413
+          except Exception as e:
+            raise Exception(f"check_posts/creating post divs/{e}")
+          
+          if int(getid(post_href)) > self.latest:
+            if format(post_href) is not None:
+              post_href = format(post_href)
+            try:
+              latest_ids.append(int(getid(post_href)))
+              posts.append(await ForumPost.create(post_href))
+            except Exception as e:
+              raise Exception(f"check_posts/\"{self.id} {post_href}\"/{e}")
 
           # This is for diagnostics
           # print(f"post href: {getid(post_href)}, self.latest: {self.latest}, should the post be added: {int(getid(post_href))>self.latest}")
 
-          if int(getid(post_href)) > self.latest:
-            latest_ids.append(int(getid(post_href)))
-            posts.append(await ForumPost.create(post_href))
+
 
     if len(latest_ids) != 0:
       self.latest = max(latest_ids)
@@ -199,21 +223,39 @@ class ForumPost():
   async def get_post_info(self) -> None:
     async with aiohttp.ClientSession() as session:
       async with session.get(f'https://forum.donanimhaber.com{self.href}') as response:
-        soup = BeautifulSoup(await response.text(),"html.parser")
+        try:
+          soup = BeautifulSoup(await response.text(),"html.parser")
+        except Exception as e:
+          raise Exception(f"ForumPost/{e}")
+        
+        try:
+          self.title = soup.find("h1",class_="kl-basligi upInfinite").text.strip()
+        except Exception as e:
+          raise Exception(f"ForumPost/title/{e}")
+        
+        try:
+          author_info = soup.find("aside",class_="ki-cevapsahibi")
+          self.author = author_info.find("div",class_="ki-kullaniciadi member-info").find("a").find("b").text
+        except Exception as e:
+          raise Exception(f"ForumPost/author/{e}")
 
-        self.title = soup.find("h1",class_="kl-basligi upInfinite").text.strip()
-        author_info = soup.find("aside",class_="ki-cevapsahibi")
-        self.author = author_info.find("div",class_="ki-kullaniciadi member-info").find("a").find("b").text
         try:
           self.avatar = author_info.find("div",class_="content-holder").find("a",class_="ki-avatar").find("img").attrs["src"]
         except AttributeError:
           pass
-        content_json = soup.find("script",type="application/ld+json").text    # The easiest way to get the post content seems to be through this element
-        content_start = content_json.index("articleBody")+14                  # But this element consists of a very large json file
-        content_end =  content_json.index("articleS")-3                       # And since it wouldn't make sense to parse everything just to get one thing
-        self.content = content_json[content_start:content_end].strip()        # We just use string manipulation
-                                                                              # The added +14 and -3 are to remove some extra characters that index() leaves in
 
+        try:
+          # The easiest way to get the post content seems to be through this element, but this element consists of a very large json file
+          # And since it wouldn't make sense to parse everything just to get one thing we just use string manipulation
+          # The added +14 and -3 are to remove some extra characters that index() leaves in
+          content_jsons = soup.findAll(name="script",type="application/ld+json")
+          content_json = content_jsons[-1].text
+          content_start = content_json.index("articleBody")+14
+          content_end =  content_json.index("articleS")-3
+          self.content = content_json[content_start:content_end].strip()
+
+        except Exception as e:
+          raise Exception(f"ForumPost/content/{e}")
 
 async def isvalid(link) -> bool:  # Checks if the link leads to a valid DonanımHaber forum
   if DOMAIN in link:

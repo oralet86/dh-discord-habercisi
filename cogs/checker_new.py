@@ -33,7 +33,7 @@ class ForumChecker(commands.Cog):
       test_channel = self.bot.get_channel(TEST)
       await test_channel.send("Yeni konulara bakıyorum!")
     except Exception as e:
-      print(f"HATA: {e}")
+      print(f"\"Yeni konulara bakıyorum!\" Mesajı gönderilirken bir hata oluştu: {e}")
 
     try:
       for subforum in forum.Subforum.subforum_list:
@@ -48,7 +48,8 @@ class ForumChecker(commands.Cog):
 
             await channel.send(embed=embed,view=view)
     except Exception as e:
-      await test_channel.send(f"Bir hata oluştu. Hata: {e}")
+      print(f"Hata: {e}")
+      await test_channel.send(f"Hata: {e}")
 
 
     # print(f"Completed Execution in {perf_counter() - start} seconds")
@@ -96,21 +97,27 @@ class ForumChecker(commands.Cog):
 
 
 def make_embed(post: forum.ForumPost) -> discord.Embed:
-  embed = discord.Embed(title="Yeni Konu!", color=discord.Colour.blurple(), description=post.author)
-  value = post.content if len(post.content) < 512 else f"{post.content[:512]}..."    # Crop any content over 512 characters to save screenspace
-  embed.add_field(name=post.title,value=value)
-  if post.avatar is not None:
-    embed.set_thumbnail(url=post.avatar)
-  return embed
+  try:
+    embed = discord.Embed(title="Yeni Konu!", color=discord.Colour.blurple(), description=post.author)
+    value = post.content if len(post.content) < 512 else f"{post.content[:512]}..."    # Crop any content over 512 characters to save screenspace
+    embed.add_field(name=post.title,value=value)
+    if post.avatar is not None:
+      embed.set_thumbnail(url=post.avatar)
+    return embed
+  except Exception as e:
+    raise Exception(f"make_embed/{e}")
 
 
 def make_view(post) -> discord.ui.View:
-  computer_button = discord.ui.Button(style=discord.ButtonStyle.link, label="PC Link",url=f"https://forum.donanimhaber.com{post.href}")
-  mobile_button = discord.ui.Button(style=discord.ButtonStyle.link, label="Mobil Link",url=f"https://mobile.donanimhaber.com{post.href}")
-  view = discord.ui.View()
-  view.add_item(computer_button)
-  view.add_item(mobile_button)
-  return view
+  try:
+    computer_button = discord.ui.Button(style=discord.ButtonStyle.link, label="PC Link",url=f"https://forum.donanimhaber.com{post.href}")
+    mobile_button = discord.ui.Button(style=discord.ButtonStyle.link, label="Mobil Link",url=f"https://mobile.donanimhaber.com{post.href}")
+    view = discord.ui.View()
+    view.add_item(computer_button)
+    view.add_item(mobile_button)
+    return view
+  except Exception as e:
+    raise Exception(f"make_view/{e}")
 
 
 if __name__ == '__main__':
