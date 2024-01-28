@@ -17,7 +17,7 @@ def main() -> None:
 
 
 class ForumChecker(commands.Cog):
-  def __init__(self, bot) -> None:
+  def __init__(self, bot: commands.Bot) -> None:
     self.bot = bot
     self.check.start()
 
@@ -124,5 +124,5 @@ if __name__ == '__main__':
   main()
 
 else:
-  async def setup(bot) -> None:
+  async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(ForumChecker(bot))
