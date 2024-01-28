@@ -5,7 +5,7 @@ import aiohttp
 import json
 
 DOMAIN = "donanimhaber.com"
-FORUMS_FILE_NAME = "forums.json"
+FORUMS_DIRECTORY = "cogs\\donanimhaber\\forums.json"
 
 
 def main() -> None:
@@ -166,13 +166,13 @@ class Subforum():
 
   @classmethod
   def load_subforums(cls) -> list["Subforum"]:
-    if exists(FORUMS_FILE_NAME) and getsize(FORUMS_FILE_NAME) != 0:        # If the .json file does exist, it loads in the data from that file.
-      with open(FORUMS_FILE_NAME,"r") as json_file:
+    if exists(FORUMS_DIRECTORY) and getsize(FORUMS_DIRECTORY) != 0:        # If the .json file does exist, it loads in the data from that file.
+      with open(FORUMS_DIRECTORY,"r") as json_file:
         for subforum_data in json.load(json_file):
           Subforum.load_from_file(id=subforum_data['id'],channels=subforum_data['channels'],
                   latest=int(subforum_data['latest']),title=subforum_data['title'])
     else:
-      with open(FORUMS_FILE_NAME,"w") as json_file:
+      with open(FORUMS_DIRECTORY,"w") as json_file:
         json.dump([],json_file)
 
 
@@ -183,7 +183,7 @@ class Subforum():
     for subforum in Subforum.subforum_list:
       save_file.append({"id": subforum.id, "channels": subforum.channels, "latest": subforum.latest, "title": subforum.title})
 
-    with open(FORUMS_FILE_NAME,"w") as json_file:
+    with open(FORUMS_DIRECTORY,"w") as json_file:
       json.dump(save_file,json_file, indent=2)
   
 

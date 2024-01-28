@@ -1,7 +1,7 @@
 from discord.ext import tasks, commands
 import discord
 try:
-  import cogs.forum as forum
+  import cogs.donanimhaber.forum as forum
 except ModuleNotFoundError:
   import forum
 
