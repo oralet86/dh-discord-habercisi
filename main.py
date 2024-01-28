@@ -14,6 +14,8 @@ intents.message_content = True
 
 bot = commands.Bot(command_prefix=PREFIX, intents=intents)
 
+cogs = ["cogs.donanimhaber.donanimhaber", "cogs.exchange.exchange", "cogs.pegasus.pegasus"]
+
 
 def main() -> None:
     run_bot()
@@ -23,8 +25,8 @@ def run_bot() -> None:
     @bot.event
     async def on_ready() -> None:
         print(f"{bot.user} is ready!")
-        await bot.load_extension("cogs.donanimhaber.donanimhaber")
-        await bot.load_extension("cogs.exchange.exchange")
+        for cog in cogs:
+            bot.load_extension(cog)
 
     @bot.event
     async def on_command_error(ctx, error) -> None:
