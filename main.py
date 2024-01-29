@@ -26,7 +26,7 @@ def run_bot() -> None:
     async def on_ready() -> None:
         print(f"{bot.user} is ready!")
         for cog in cogs:
-            bot.load_extension(cog)
+            await bot.load_extension(cog)
 
     @bot.event
     async def on_command_error(ctx, error) -> None:
