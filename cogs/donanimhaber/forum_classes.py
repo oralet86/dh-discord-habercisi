@@ -257,6 +257,7 @@ class ForumPost():
         except Exception as e:
           raise Exception(f"ForumPost/content/{e}")
 
+
 async def isvalid(link) -> bool:  # Checks if the link leads to a valid DonanımHaber forum
   if DOMAIN in link:
     try:

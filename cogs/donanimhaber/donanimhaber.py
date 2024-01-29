@@ -1,18 +1,19 @@
 from discord.ext import tasks, commands
 import discord
 try:
-  import cogs.donanimhaber.forum as forum
+  import cogs.donanimhaber.forum_classes as forum_classes
 except ModuleNotFoundError:
-  import forum
+  import cogs.donanimhaber.forum_classes as forum_classes
 
 # from time import perf_counter
 
 TEST = 1100730493319774218 # Test channel
+DH_COOLDOWN = 1 # Minutes
 
-forum.Subforum.load_subforums() # Used to load subforum data from the json
+forum_classes.Subforum.load_subforums() # Used to load subforum data from the json
 
 def main() -> None:
-  for sf in forum.Subforum.subforum_list:
+  for sf in forum_classes.Subforum.subforum_list:
     print(f"ID: {sf.id}, Channels: {sf.channels}, Latest: {sf.latest}")
 
 
@@ -26,7 +27,7 @@ class ForumChecker(commands.Cog):
     await self.check.cancel()
 
 
-  @tasks.loop(seconds=60)
+  @tasks.loop(minutes=DH_COOLDOWN)
   async def check(self) -> None:
     # start = perf_counter() Used for speed diagnosis
     try:
@@ -36,7 +37,7 @@ class ForumChecker(commands.Cog):
       print(f"\"Yeni konulara bakıyorum!\" Mesajı gönderilirken bir hata oluştu: {e}")
 
     try:
-      for subforum in forum.Subforum.subforum_list:
+      for subforum in forum_classes.Subforum.subforum_list:
         new_posts = await subforum.check_posts()
 
         for new_post in new_posts:
@@ -61,7 +62,7 @@ class ForumChecker(commands.Cog):
 
   @commands.command()
   async def ekle(self, ctx: commands.Context, link:str=None) -> None:
-    result = await forum.Subforum.add_channel(ctx.channel.id, link)
+    result = await forum_classes.Subforum.add_channel(ctx.channel.id, link)
     match result:
       case 0:
           await ctx.send(f"İşlem başarılı! Artık `{link}` forumunda yeni bir konu açıldığında `{ctx.channel.name}` kanalına mesaj atılacak.")
@@ -73,7 +74,7 @@ class ForumChecker(commands.Cog):
 
   @commands.command()
   async def cikar(self, ctx: commands.Context, link:str=None) -> None:
-    result = await forum.Subforum.remove_channel(ctx.channel.id, link) 
+    result = await forum_classes.Subforum.remove_channel(ctx.channel.id, link) 
     match result:
       case 0:
           await ctx.send(f"İşlem başarılı! Artık `{ctx.channel.name}` kanalında herhangi bir forum takip edilmeyecek.")
@@ -85,7 +86,7 @@ class ForumChecker(commands.Cog):
 
   @commands.command()
   async def liste(self, ctx: commands.Context) -> None:
-    result = await forum.Subforum.get_list(ctx.channel.id)
+    result = await forum_classes.Subforum.get_list(ctx.channel.id)
     return_str = f"Bu sohbette takip edilen altforum sayısı: {len(result)}"
 
     for subforum in result:
@@ -96,7 +97,7 @@ class ForumChecker(commands.Cog):
     await ctx.send(return_str)
 
 
-def make_embed(post: forum.ForumPost) -> discord.Embed:
+def make_embed(post: forum_classes.ForumPost) -> discord.Embed:
   try:
     embed = discord.Embed(title="Yeni Konu!", color=discord.Colour.blurple(), description=post.author)
     value = post.content if len(post.content) < 512 else f"{post.content[:512]}..."    # Crop any content over 512 characters to save screenspace
