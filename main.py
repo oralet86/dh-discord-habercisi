@@ -14,7 +14,7 @@ intents.message_content = True
 
 bot = commands.Bot(command_prefix=PREFIX, intents=intents)
 
-cogs = ["cogs.donanimhaber.donanimhaber", "cogs.exchange.exchange", "cogs.pegasus.pegasus"]
+cogs = ["cogs.donanimhaber.donanimhaber", "cogs.exchange.exchange"]
 
 
 def main() -> None:
