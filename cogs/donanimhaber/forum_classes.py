@@ -5,7 +5,7 @@ import aiohttp
 import json
 
 DOMAIN = "donanimhaber.com"
-FORUMS_DIRECTORY = "cogs\\donanimhaber\\forums.json"
+FORUMS_DIRECTORY = "forums.json"
 
 
 def main() -> None:
@@ -98,7 +98,7 @@ class Subforum():
               latest_ids.append(int(getid(post_href)))
               posts.append(await ForumPost.create(post_href))
             except Exception as e:
-              raise Exception(f"check_posts/\"{self.id} {post_href}\"/{e}")
+              raise Exception(f"check_posts/\"{self.id}{post_href}\"/{e}")
 
           # This is for diagnostics
           # print(f"post href: {getid(post_href)}, self.latest: {self.latest}, should the post be added: {int(getid(post_href))>self.latest}")
@@ -235,7 +235,12 @@ class ForumPost():
         
         try:
           author_info = soup.find("aside",class_="ki-cevapsahibi")
-          self.author = author_info.find("div",class_="ki-kullaniciadi member-info").find("a").find("b").text
+        except Exception as e:
+          raise Exception(f"ForumPost/author_info/{e}")
+        
+        try:
+          if author_info is not None:
+            self.author = author_info.find("div",class_="ki-kullaniciadi member-info").find("a").find("b").text
         except Exception as e:
           raise Exception(f"ForumPost/author/{e}")
 
