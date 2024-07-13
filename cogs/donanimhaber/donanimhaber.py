@@ -1,9 +1,7 @@
 from discord.ext import tasks, commands
 import discord
 import cogs.donanimhaber.forum_classes as forum_classes
-
-TEST = 1100730493319774218 # Test channel
-DH_COOLDOWN = 1 # Minutes
+from environmental_variables import SEARCH_COOLDOWN, TEST_CHANNEL
 
 forum_classes.Subforum.load_subforums() # Used to load subforum data from the json
 
@@ -22,10 +20,10 @@ class ForumChecker(commands.Cog):
     await self.check.cancel()
 
 
-  @tasks.loop(minutes=DH_COOLDOWN)
+  @tasks.loop(minutes=SEARCH_COOLDOWN)
   async def check(self) -> None:
     try:
-      test_channel = self.bot.get_channel(TEST)
+      test_channel = self.bot.get_channel(TEST_CHANNEL)
       await test_channel.send("Yeni konulara bakıyorum!")
     except Exception as e:
       print(f"\"Yeni konulara bakıyorum!\" Mesajı gönderilirken bir hata oluştu: {e}")

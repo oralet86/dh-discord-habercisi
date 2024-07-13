@@ -1,12 +1,11 @@
 from os.path import exists, getsize
 from bs4 import BeautifulSoup
 from typing import List
+from environmental_variables import DB_DIRECTORY
 import aiohttp
 import json
 
 DOMAIN = "donanimhaber.com"
-FORUMS_DIRECTORY = "forums.json"
-
 
 def main() -> None:
   print(getid("/apple-iphone-firsatlari-tum-modeller-ana-konu--121084032?isLink=true"))
@@ -166,13 +165,13 @@ class Subforum():
 
   @classmethod
   def load_subforums(cls) -> list["Subforum"]:
-    if exists(FORUMS_DIRECTORY) and getsize(FORUMS_DIRECTORY) != 0:        # If the .json file does exist, it loads in the data from that file.
-      with open(FORUMS_DIRECTORY,"r") as json_file:
+    if exists(DB_DIRECTORY) and getsize(DB_DIRECTORY) != 0:        # If the .json file does exist, it loads in the data from that file.
+      with open(DB_DIRECTORY,"r") as json_file:
         for subforum_data in json.load(json_file):
           Subforum.load_from_file(id=subforum_data['id'],channels=subforum_data['channels'],
                   latest=int(subforum_data['latest']),title=subforum_data['title'])
     else:
-      with open(FORUMS_DIRECTORY,"w") as json_file:
+      with open(DB_DIRECTORY,"w") as json_file:
         json.dump([],json_file)
 
 
@@ -183,7 +182,7 @@ class Subforum():
     for subforum in Subforum.subforum_list:
       save_file.append({"id": subforum.id, "channels": subforum.channels, "latest": subforum.latest, "title": subforum.title})
 
-    with open(FORUMS_DIRECTORY,"w") as json_file:
+    with open(DB_DIRECTORY,"w") as json_file:
       json.dump(save_file,json_file, indent=2)
   
 
