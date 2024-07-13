@@ -7,7 +7,7 @@ load_dotenv(".env")
 
 TOKEN = os.getenv("TOKEN")
 
-PREFIX = "dh"
+PREFIX = os.getenv("PREFIX")
 
 intents = discord.Intents.default()
 intents.message_content = True
