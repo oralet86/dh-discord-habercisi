@@ -1,11 +1,6 @@
 from discord.ext import tasks, commands
 import discord
-try:
-  import cogs.donanimhaber.forum_classes as forum_classes
-except ModuleNotFoundError:
-  import cogs.donanimhaber.forum_classes as forum_classes
-
-# from time import perf_counter
+import cogs.donanimhaber.forum_classes as forum_classes
 
 TEST = 1100730493319774218 # Test channel
 DH_COOLDOWN = 1 # Minutes
@@ -29,7 +24,6 @@ class ForumChecker(commands.Cog):
 
   @tasks.loop(minutes=DH_COOLDOWN)
   async def check(self) -> None:
-    # start = perf_counter() Used for speed diagnosis
     try:
       test_channel = self.bot.get_channel(TEST)
       await test_channel.send("Yeni konulara bakıyorum!")
@@ -51,9 +45,6 @@ class ForumChecker(commands.Cog):
     except Exception as e:
       print(f"Hata: {e}")
       await test_channel.send(f"Hata: {e}")
-
-
-    # print(f"Completed Execution in {perf_counter() - start} seconds")
 
 
   @check.before_loop
@@ -92,7 +83,7 @@ class ForumChecker(commands.Cog):
     for subforum in result:
       return_str+=f"\n- Başlık: `{subforum.title}`, Link: `https://forum.donanimhaber.com/burasi-aslinda-onemsiz--{subforum.id}`"
     
-    return_str+=f"\nHerhangi bir altforumu takip etmeyi 'dhcikar `forum linki`' komutu ile bırakabilirsiniz."
+    return_str+="\nHerhangi bir altforumu takip etmeyi 'dhcikar `forum linki`' komutu ile bırakabilirsiniz."
     
     await ctx.send(return_str)
 
