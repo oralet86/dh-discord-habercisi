@@ -1,11 +1,9 @@
 from os.path import exists, getsize
 from bs4 import BeautifulSoup
 from typing import List
-from environmental_variables import DB_DIRECTORY
+from environmental_variables import DB_DIRECTORY, DH_DOMAIN
 import aiohttp
 import json
-
-DOMAIN = "donanimhaber.com"
 
 def main() -> None:
   print(getid("/apple-iphone-firsatlari-tum-modeller-ana-konu--121084032?isLink=true"))
@@ -263,7 +261,7 @@ class ForumPost():
 
 
 async def isvalid(link) -> bool:  # Checks if the link leads to a valid DonanımHaber forum
-  if DOMAIN in link:
+  if DH_DOMAIN in link:
     try:
       async with aiohttp.ClientSession() as session:
         async with session.get(link) as response:
