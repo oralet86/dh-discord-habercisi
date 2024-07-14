@@ -10,29 +10,28 @@ class Exchange(commands.Cog):
 
   @commands.command()
   async def doviz(self, ctx: commands.Context):
-
     url = "https://dovizborsa.com/"
 
     async with aiohttp.ClientSession() as session:
       async with session.get(url) as response:
         if response.status == 200:
           soup = BeautifulSoup(await response.text(),"html.parser")
-
         else:
-          ctx.send("Döviz verisine erişilemedi.")
-          return 0
+          await ctx.send("Döviz verisine erişilemedi.")
 
     keys = ["435","200","751"] # ID's of dollar, euro, and gold
-
     values = []
 
     for key in keys:
-      alimsatim = soup.find("div",id=key).find("div",class_="-x1").find_all("span")
+      try:
+        alimsatim = soup.find("div",id=key).find("div",class_="-x1").find_all("span") # type: ignore
+      except Exception:
+        await ctx.send("Döviz verisine erişilemedi.")
+
       for value in alimsatim:
         values.append(value.get_text(strip=True)[:-2])
 
     embed = discord.Embed(title="Döviz", color=discord.Colour.blurple())
-
     embed.add_field(name="Dolar",value=f"Alım: {values[1]}\nSatım: {values[0]}", inline=True)
     embed.add_field(name="Euro",value=f"Alım: {values[3]}\nSatım: {values[2]}", inline=True)
     embed.add_field(name="Altın (gr)",value=f"Alım: {values[5]}\nSatım: {values[4]}", inline=True)
