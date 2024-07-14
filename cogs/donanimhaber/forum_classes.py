@@ -5,36 +5,87 @@ from environmental_variables import DB_DIRECTORY, DH_DOMAIN
 import aiohttp
 import json
 
+
 def main() -> None:
-  print(getid("/apple-iphone-firsatlari-tum-modeller-ana-konu--121084032?isLink=true"))
-  print(format("/apple-iphone-firsatlari-tum-modeller-ana-konu--121084032?isLink=true"))
+  print(getTopicID("/apple-iphone-firsatlari-tum-modeller-ana-konu--121084032?isLink=true"))
+  print(getSubforumID("https://forum.donanimhaber.com/egitim-ve-sinavlar-genel-sohbet--f2642"))
+  print(cleanLink("/apple-iphone-firsatlari-tum-modeller-ana-konu--121084032?isLink=true"))
   # Put your tests here
 
 
-def getid(link: str) -> (int | str):
-  try:
-    dash = link.rfind("-")
-    if dash == -1:
-      raise ValueError(f"Couldn't find id of link: {link}")
+def getSubforumID(link: str) -> str:
+  """Gets the ID of a forum subforum from a DonanimHaber link
 
-    link = link[dash+1:]
+  Args:
+      link (str): A DonanimHaber link that leads to a forum subforum
 
-    question = link.rfind("?")
-    if question != -1:
-      link = link[:question]
-  except Exception as ex:
-    raise Exception(f"getid/{link}/{ex}")
-  
-  try:
-    return int(link)
-  except ValueError:
-    return link
+  Raises:
+      ValueError: If the ID couldn't be extracted from the link
 
-def format(link: str) -> (str | None):
-  question_index = link.rfind("?")
+  Returns:
+      str: The ID of the forum subforum
+  """
+  link = cleanLink(link)
   dash_index = link.rfind("--")
-  if question_index != -1 and question_index > dash_index:
-    return link[:question_index]
+  if dash_index == -1:
+    raise ValueError("Couldn't extract ID from link")
+  return link[dash_index+2:]
+
+
+def getTopicID(link: str) -> int:
+  """Gets the ID of a forum topic from a DonanimHaber link
+
+  Args:
+      link (str): A DonanimHaber link that leads to a forum topic
+
+  Raises:
+      ValueError: If the ID couldn't be extracted from the link
+
+  Returns:
+      int: The ID of the forum topic
+  """
+  link = cleanLink(link)
+  dash_index = link.rfind("-")
+  if dash_index == -1:
+    raise ValueError("Couldn't extract ID from link")
+  return int(link[dash_index+1:])
+
+
+def cleanLink(link: str) -> str:
+  """Cleans extra query parameters from the end of a DonanimHaber link
+
+  Args:
+      link (str): The link to be cleaned
+
+  Returns:
+      str: The cleaned link
+  """
+  dash_index = link.rfind("--") + 2 # Find end of the link
+  question_index = link[dash_index:].find("?")
+  if question_index == -1:
+    # There are no query parameters
+    return link
+  else:
+    return link[:dash_index+question_index]
+
+
+async def isValid(link: str) -> bool:
+  """Checks if the link leads to a valid DonanimHaber page
+
+  Args:
+      link (str): The link to be checked
+
+  Returns:
+      bool: True if the link is valid, False otherwise
+  """
+  if DH_DOMAIN in link:
+    try:
+      async with aiohttp.ClientSession() as session:
+        async with session.get(link) as response:
+          return response.status == 200
+    except aiohttp.ClientError:
+      return False
+  return False
 
 
 class Subforum():
@@ -56,8 +107,8 @@ class Subforum():
 
 
   async def get_subforum_info(self, link, channels=[], latest=0, title=None) -> None:
-    if await isvalid(link):
-      self.id = getid(link)
+    if await isValid(link):
+      self.id = getSubforumID(link)
       self.channels: List[int] = channels
       self.latest: int = latest
       self.title: str = title                                          # Title is actually loaded when checking for new posts so we don't request the same page twice
@@ -78,21 +129,21 @@ class Subforum():
           self.title = soup.title.text[:soup.title.text.find(" Forumları")]
         
         try:
-          post_divs = soup(class_="kl-icerik-satir yenikonu",limit=15) # Look at the top 15 posts
+          # Look at the top 15 posts
+          post_divs = soup(class_="kl-icerik-satir yenikonu",limit=15)
         except Exception as e:
           raise Exception(f"check_posts/creating post divs/{e}")
 
         for post in post_divs:
           try:
-            post_href: str = post.select_one("a").get("href")               # Get the href, for example: /shopflix-guvenilir-mi--155719413
+            # Get the href, for example: /shopflix-guvenilir-mi--155719413
+            post_href = cleanLink(post.select_one("a").get("href"))
           except Exception as e:
             raise Exception(f"check_posts/creating post divs/{e}")
           
-          if int(getid(post_href)) > self.latest:
-            if format(post_href) is not None:
-              post_href = format(post_href)
+          if getTopicID(post_href) > self.latest:
             try:
-              latest_ids.append(int(getid(post_href)))
+              latest_ids.append(getTopicID(post_href))
               posts.append(await ForumPost.create(post_href))
             except Exception as e:
               raise Exception(f"check_posts/\"{self.id}{post_href}\"/{e}")
@@ -112,7 +163,7 @@ class Subforum():
   async def add_channel(channel_id, link) -> int:
     if link is None:
       return 1
-    id = getid(link)
+    id = getSubforumID(link)
 
     for subforum in Subforum.subforum_list:
       if subforum.id == id:
@@ -142,7 +193,7 @@ class Subforum():
 
     else:
       for subforum in Subforum.subforum_list:
-        if subforum.id == getid(link):
+        if subforum.id == getSubforumID(link):
           if channel_id in subforum.channels:
             subforum.channels.remove(channel_id)
 
@@ -259,18 +310,6 @@ class ForumPost():
         except Exception as e:
           raise Exception(f"ForumPost/content/{e}")
 
-
-async def isvalid(link) -> bool:  # Checks if the link leads to a valid DonanımHaber forum
-  if DH_DOMAIN in link:
-    try:
-      async with aiohttp.ClientSession() as session:
-        async with session.get(link) as response:
-          return response.status == 200
-
-    except aiohttp.ClientError:
-      return False
-
-  return False
 
 if __name__ == '__main__':
   main()
