@@ -88,36 +88,86 @@ async def isValid(link: str) -> bool:
   return False
 
 
-class Subforum():
-  subforum_list: List["Subforum"] = []
+class DHSubforum():
+  """A class to represent a subforum in Donanimhaber."""
 
+  subforum_list: List["DHSubforum"] = []
 
   def __init__(self) -> None:
-    self.id = None
-    self.channels = None
-    self.latest = None
-    self.title = None
-    Subforum.subforum_list.append(self)
-  
+    DHSubforum.subforum_list.append(self)
+    self.id: str = ""
+    self.channels: List[int] = []
+    self.latest: int = 0
+    self.title: str = ""
+
 
   def remove(self) -> None:
-    Subforum.subforum_list.remove(self)
+    """Removes the subforum from the subforums list and deletes the object."""
+    DHSubforum.subforum_list.remove(self)
     del self
-    Subforum.save_subforums()
+    DHSubforum.save_subforums()
+  
+
+  @classmethod
+  async def create(cls, link) -> "DHSubforum":  # Got to use this to create new objects because of stupid async logic
+    """Creates a new DHSubforum object and adds it to the subforum list.
+
+    Args:
+        link (str): The link to the subforum page.
+
+    Returns:
+        DHSubforum: The created DHSubforum object.
+    """
+    subforum = DHSubforum()
+    await subforum.get_subforum_info(link=link)
+
+    return subforum
+  
+  
+  @classmethod
+  async def get_list(cls, id) -> List["DHSubforum"]:
+    """Gets a list of DHSubforum objects that send updates to a specific channel.
+
+    Returns:
+        List[DHSubforum]: A list of DHSubforum objects that send alerts to the channel.
+    """
+    result = []
+    for subforum in DHSubforum.subforum_list:
+      if id in subforum.channels:
+        result.append(subforum)
+    
+    return result
 
 
-  async def get_subforum_info(self, link, channels=[], latest=0, title=None) -> None:
+  async def get_subforum_info(self, link: str, channels: List[int] = [], latest: int = 0, title: str | None = None) -> None:
+    """A method to get the subforum information from the Donanimhaber page.
+
+    Args:
+        link (str): Link to the subforum page.
+        channels (list, optional): Channels that are alerted whenever a new topic is created in the subforum. Defaults to [].
+        latest (int, optional): ID of the latest topic. Defaults to 0.
+        title (str, optional): Title of the subforum. Defaults to None.
+
+    Raises:
+        ValueError: If the link is invalid.
+    """
     if await isValid(link):
       self.id = getSubforumID(link)
-      self.channels: List[int] = channels
-      self.latest: int = latest
-      self.title: str = title                                          # Title is actually loaded when checking for new posts so we don't request the same page twice
-      Subforum.subforum_list.append(self)
+      self.channels = channels
+      self.latest = latest
+      # Title is actually loaded when checking for new posts so we don't request the same page twice
+      if title is not None:
+        self.title = title
     else:
       raise ValueError("Invalid forum link")
 
 
-  async def check_posts(self) -> List["ForumPost"]:
+  async def check_posts(self) -> List["DHTopic"]:
+    """The method that checks for new posts in the subforum.
+
+    Returns:
+        List[DHTopic]: A list of new posts in the subforum in the form of DHTopic objects.
+    """
     posts = []
     latest_ids = []
 
@@ -126,86 +176,72 @@ class Subforum():
         soup = BeautifulSoup(await response.text(),"html.parser")
 
         if self.title is None:
-          self.title = soup.title.text[:soup.title.text.find(" Forumları")]
-        
-        try:
-          # Look at the top 15 posts
-          post_divs = soup(class_="kl-icerik-satir yenikonu",limit=15)
-        except Exception as e:
-          raise Exception(f"check_posts/creating post divs/{e}")
+          self.title = soup.title.text[:soup.title.text.find(" Forumları")] # type: ignore
+
+        # Look at the top 15 posts
+        post_divs = soup(class_="kl-icerik-satir yenikonu",limit=15)
 
         for post in post_divs:
-          try:
-            # Get the href, for example: /shopflix-guvenilir-mi--155719413
-            post_href = cleanLink(post.select_one("a").get("href"))
-          except Exception as e:
-            raise Exception(f"check_posts/creating post divs/{e}")
+          # Get the href, for example: /shopflix-guvenilir-mi--155719413
+          post_href = cleanLink(post.select_one("a").get("href"))
           
           if getTopicID(post_href) > self.latest:
-            try:
-              latest_ids.append(getTopicID(post_href))
-              posts.append(await ForumPost.create(post_href))
-            except Exception as e:
-              raise Exception(f"check_posts/\"{self.id}{post_href}\"/{e}")
-
-          # This is for diagnostics
-          # print(f"post href: {getid(post_href)}, self.latest: {self.latest}, should the post be added: {int(getid(post_href))>self.latest}")
-
-
+            latest_ids.append(getTopicID(post_href))
+            posts.append(await DHTopic.create(post_href))
 
     if len(latest_ids) != 0:
       self.latest = max(latest_ids)
-      Subforum.save_subforums()
+      DHSubforum.save_subforums()
 
     return posts
 
 
-  async def add_channel(channel_id, link) -> int:
+  async def add_channel(channel_id: int, link: str | None) -> int:
     if link is None:
       return 1
     id = getSubforumID(link)
 
-    for subforum in Subforum.subforum_list:
+    for subforum in DHSubforum.subforum_list:
       if subforum.id == id:
         if id in subforum.channels:
           return 2
         else:
           subforum.channels.append(channel_id)
-          Subforum.save_subforums()
+          DHSubforum.save_subforums()
           return 0
 
     try:
-      await Subforum.create(link)
-      Subforum.save_subforums()
+      await DHSubforum.create(link)
+      DHSubforum.save_subforums()
       return 0
     except ValueError:
       return 1
 
 
-  async def remove_channel(channel_id, link:str= None) -> int:
+  async def remove_channel(channel_id: int, link: str | None = None) -> int:
     if link is None:
-      for subforum in Subforum.subforum_list:
+      for subforum in DHSubforum.subforum_list:
         if channel_id in subforum.channels:
           subforum.channels.remove(channel_id)
 
-      Subforum.save_subforums()
+      DHSubforum.save_subforums()
       return 0
 
     else:
-      for subforum in Subforum.subforum_list:
+      for subforum in DHSubforum.subforum_list:
         if subforum.id == getSubforumID(link):
           if channel_id in subforum.channels:
             subforum.channels.remove(channel_id)
 
-            Subforum.save_subforums()
+            DHSubforum.save_subforums()
             return 1
 
     return 2
 
 
   @classmethod
-  def load_from_file(cls, id, channels=[], latest=0, title=None) -> None:
-    subforum = Subforum()
+  def load_from_file(cls, id, channels=[], latest=0, title="") -> None:
+    subforum = DHSubforum()
     subforum.id = id
     subforum.channels = channels
     subforum.latest = latest
@@ -213,11 +249,11 @@ class Subforum():
 
 
   @classmethod
-  def load_subforums(cls) -> list["Subforum"]:
+  def load_subforums(cls):
     if exists(DB_DIRECTORY) and getsize(DB_DIRECTORY) != 0:        # If the .json file does exist, it loads in the data from that file.
       with open(DB_DIRECTORY,"r") as json_file:
         for subforum_data in json.load(json_file):
-          Subforum.load_from_file(id=subforum_data['id'],channels=subforum_data['channels'],
+          DHSubforum.load_from_file(id=subforum_data['id'],channels=subforum_data['channels'],
                   latest=int(subforum_data['latest']),title=subforum_data['title'])
     else:
       with open(DB_DIRECTORY,"w") as json_file:
@@ -228,42 +264,26 @@ class Subforum():
   def save_subforums(cls) -> None:
     save_file = []
 
-    for subforum in Subforum.subforum_list:
+    for subforum in DHSubforum.subforum_list:
       save_file.append({"id": subforum.id, "channels": subforum.channels, "latest": subforum.latest, "title": subforum.title})
 
     with open(DB_DIRECTORY,"w") as json_file:
       json.dump(save_file,json_file, indent=2)
-  
-
-  @classmethod
-  async def create(cls, link) -> None:  # Got to use this to create new objects because of stupid async logic
-    subforum = Subforum()
-    await subforum.get_subforum_info(link=link)
-    return subforum
-  
-  
-  @classmethod
-  async def get_list(cls, id) -> List["Subforum"]:
-    result = []
-    for subforum in Subforum.subforum_list:
-      if id in subforum.channels:
-        result.append(subforum)
-    
-    return result
 
 
-class ForumPost():
-  def __init__(self, href) -> None:
+class DHTopic():
+  """A class to represent a topic in Donanimhaber."""
+  def __init__(self, href: str) -> None:
     self.href = href
-    self.title = None
-    self.author = None
-    self.avatar = None
-    self.content = None
+    self.title: str = ""
+    self.author: str | None = None
+    self.avatar: str | None = None
+    self.content: str = ""
 
 
   @classmethod
-  async def create(cls, href) -> None:  # Got to use this to create new objects because of stupid async logic x2
-    forumpost = ForumPost(href)
+  async def create(cls, href) -> "DHTopic":  # Got to use this to create new objects because of stupid async logic x2
+    forumpost = DHTopic(href)
     await forumpost.get_post_info()
     return forumpost
 
@@ -277,7 +297,7 @@ class ForumPost():
           raise Exception(f"ForumPost/{e}")
         
         try:
-          self.title = soup.find("h1",class_="kl-basligi upInfinite").text.strip()
+          self.title = soup.find("h1",class_="kl-basligi upInfinite").text.strip() # type: ignore
         except Exception as e:
           raise Exception(f"ForumPost/title/{e}")
         
@@ -288,12 +308,12 @@ class ForumPost():
         
         try:
           if author_info is not None:
-            self.author = author_info.find("div",class_="ki-kullaniciadi member-info").find("a").find("b").text
+            self.author = author_info.find("div", class_="ki-kullaniciadi member-info").find("a").find("b").text # type: ignore
         except Exception as e:
           raise Exception(f"ForumPost/author/{e}")
 
         try:
-          self.avatar = author_info.find("div",class_="content-holder").find("a",class_="ki-avatar").find("img").attrs["src"]
+          self.avatar = author_info.find("div",class_="content-holder").find("a",class_="ki-avatar").find("img").attrs["src"] # type: ignore
         except AttributeError:
           pass
 
