@@ -189,46 +189,65 @@ class DHSubforum():
     return posts
 
 
-  async def add_channel(channel_id: int, link: str | None) -> int:
+  @classmethod
+  async def addChannel(cls, channel_id: int, link: str | None) -> int:
+    """Adds a discord channel to the list of channels that receive updates from a subforum.
+
+    Args:
+        channel_id (int): The ID of the discord channel that will receive updates.
+        link (str | None): The link to the subforum page. Defaults to None.
+
+    Returns:
+        int: 0 if the operation is successful, 1 if the link is invalid or a link hasn't been provided, 2 if the channel is already in the list.
+    """
     if link is None:
       return 1
     id = getSubforumID(link)
 
-    for subforum in DHSubforum.subforum_list:
+    for subforum in cls.subforum_list:
       if subforum.id == id:
         if id in subforum.channels:
           return 2
         else:
           subforum.channels.append(channel_id)
-          DHSubforum.save_subforums()
+          cls.save_subforums()
           return 0
 
     try:
-      await DHSubforum.create(link)
-      DHSubforum.save_subforums()
+      await cls.create(link)
+      cls.save_subforums()
       return 0
     except ValueError:
       return 1
 
 
-  async def remove_channel(channel_id: int, link: str | None = None) -> int:
+  @classmethod
+  async def removeChannel(cls, channel_id: int, link: str | None = None) -> int:
+    """Removes a discord channel from the list of channels that receive updates from a subforum.
+
+    Args:
+        channel_id (int): The ID of the discord channel that will be removed.
+        link (str | None, optional): The link to the subforum page. Removes all subforums updates from the discord channel if no link is provided. Defaults to None.
+
+    Returns:
+        int: _description_
+    """
     if link is None:
-      for subforum in DHSubforum.subforum_list:
+      for subforum in cls.subforum_list:
         if channel_id in subforum.channels:
           subforum.channels.remove(channel_id)
 
-      DHSubforum.save_subforums()
+      cls.save_subforums()
       return 0
 
     else:
-      for subforum in DHSubforum.subforum_list:
+      for subforum in cls.subforum_list:
         if subforum.id == getSubforumID(link):
           if channel_id in subforum.channels:
             subforum.channels.remove(channel_id)
 
-            DHSubforum.save_subforums()
+            cls.save_subforums()
             return 1
-
     return 2
 
 
