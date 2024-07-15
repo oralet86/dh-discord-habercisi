@@ -118,7 +118,7 @@ class DHSubforum():
   
   
   @classmethod
-  async def getList(cls, id) -> List["DHSubforum"]:
+  async def get_list(cls, id) -> List["DHSubforum"]:
     """Gets a list of DHSubforum objects that send updates to a specific channel.
 
     Returns:
