@@ -112,13 +112,13 @@ class DHSubforum():
         DHSubforum: The created DHSubforum object.
     """
     subforum = DHSubforum()
-    await subforum.get_subforum_info(link=link)
+    await subforum.initalizeSubforum(link=link)
 
     return subforum
   
   
   @classmethod
-  async def get_list(cls, id) -> List["DHSubforum"]:
+  async def getList(cls, id) -> List["DHSubforum"]:
     """Gets a list of DHSubforum objects that send updates to a specific channel.
 
     Returns:
@@ -132,8 +132,8 @@ class DHSubforum():
     return result
 
 
-  async def get_subforum_info(self, link: str, channels: List[int] = [], latest: int = 0, title: str | None = None) -> None:
-    """A method to get the subforum information from the Donanimhaber page.
+  async def initalizeSubforum(self, link: str, channels: List[int] = [], latest: int = 0, title: str | None = None) -> None:
+    """A method to initialize a subforum object. This method will be removed in the future.
 
     Args:
         link (str): Link to the subforum page.
@@ -184,7 +184,7 @@ class DHSubforum():
 
     if len(latest_ids) != 0:
       self.latest = max(latest_ids)
-      DHSubforum.save_subforums()
+      DHSubforum.saveSubforums()
 
     return posts
 
@@ -210,12 +210,12 @@ class DHSubforum():
           return 2
         else:
           subforum.channels.append(channel_id)
-          cls.save_subforums()
+          cls.saveSubforums()
           return 0
 
     try:
       await cls.create(link)
-      cls.save_subforums()
+      cls.saveSubforums()
       return 0
     except ValueError:
       return 1
@@ -237,7 +237,7 @@ class DHSubforum():
         if channel_id in subforum.channels:
           subforum.channels.remove(channel_id)
 
-      cls.save_subforums()
+      cls.saveSubforums()
       return 0
 
     else:
@@ -246,13 +246,13 @@ class DHSubforum():
           if channel_id in subforum.channels:
             subforum.channels.remove(channel_id)
 
-            cls.save_subforums()
+            cls.saveSubforums()
             return 1
     return 2
 
 
   @classmethod
-  def load_from_file(cls, id, channels=[], latest=0, title="") -> None:
+  def loadFromFile(cls, id, channels=[], latest=0, title="") -> None:
     subforum = DHSubforum()
     subforum.id = id
     subforum.channels = channels
@@ -261,11 +261,11 @@ class DHSubforum():
 
 
   @classmethod
-  def load_subforums(cls):
+  def loadSubforums(cls):
     if exists(DB_DIRECTORY) and getsize(DB_DIRECTORY) != 0:        # If the .json file does exist, it loads in the data from that file.
       with open(DB_DIRECTORY,"r") as json_file:
         for subforum_data in json.load(json_file):
-          DHSubforum.load_from_file(id=subforum_data['id'],channels=subforum_data['channels'],
+          DHSubforum.loadFromFile(id=subforum_data['id'],channels=subforum_data['channels'],
                   latest=int(subforum_data['latest']),title=subforum_data['title'])
     else:
       with open(DB_DIRECTORY,"w") as json_file:
@@ -273,7 +273,7 @@ class DHSubforum():
 
 
   @classmethod
-  def save_subforums(cls) -> None:
+  def saveSubforums(cls) -> None:
     save_file = []
 
     for subforum in DHSubforum.subforum_list:
@@ -296,11 +296,11 @@ class DHTopic():
   @classmethod
   async def create(cls, href) -> "DHTopic":  # Got to use this to create new objects because of stupid async logic x2
     forumpost = DHTopic(href)
-    await forumpost.get_post_info()
+    await forumpost.getTopicInfo()
     return forumpost
 
 
-  async def get_post_info(self) -> None:
+  async def getTopicInfo(self) -> None:
     async with aiohttp.ClientSession() as session:
       async with session.get(f'https://forum.donanimhaber.com{self.href}') as response:
         try:

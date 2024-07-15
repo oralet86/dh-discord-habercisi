@@ -3,7 +3,7 @@ import discord
 import cogs.donanimhaber.forum_classes as forum_classes
 from environmental_variables import SEARCH_COOLDOWN, TEST_CHANNEL
 
-forum_classes.DHSubforum.load_subforums() # Used to load subforum data from the json
+forum_classes.DHSubforum.loadSubforums() # Used to load subforum data from the json
 
 def main() -> None:
   for sf in forum_classes.DHSubforum.subforum_list:
@@ -30,7 +30,7 @@ class ForumChecker(commands.Cog):
 
     try:
       for subforum in forum_classes.DHSubforum.subforum_list:
-        new_posts = await subforum.check_posts()
+        new_posts = await subforum.checkPosts()
 
         for new_post in new_posts:
           embed = make_embed(new_post)
@@ -76,7 +76,7 @@ class ForumChecker(commands.Cog):
 
   @commands.command()
   async def liste(self, ctx: commands.Context) -> None:
-    result = await forum_classes.DHSubforum.get_list(ctx.channel.id)
+    result = await forum_classes.DHSubforum.getList(ctx.channel.id)
     return_str = f"Bu sohbette takip edilen altforum sayısı: {len(result)}"
 
     for subforum in result:
