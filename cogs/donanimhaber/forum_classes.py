@@ -101,13 +101,6 @@ class DHSubforum():
     self.__class__.subforum_list.append(self)
 
 
-  def remove(self) -> None:
-    """Removes the subforum from the subforums list and deletes the object."""
-    DHSubforum.subforum_list.remove(self)
-    del self
-    DHSubforum.save_subforums()
-  
-
   @classmethod
   async def create(cls, link) -> "DHSubforum":  # Got to use this to create new objects because of stupid async logic
     """Creates a new DHSubforum object and adds it to the subforum list.
