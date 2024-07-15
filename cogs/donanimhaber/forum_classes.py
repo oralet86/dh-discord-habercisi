@@ -301,32 +301,38 @@ class DHTopic():
 
 
   async def getTopicInfo(self) -> None:
+    """Gets the necessary information about the topic.
+
+    Raises:
+        Exception: If any one part of the information can't be fetched. (Except for the avatar, since it's optional)
+    """
     async with aiohttp.ClientSession() as session:
       async with session.get(f'https://forum.donanimhaber.com{self.href}') as response:
         try:
           soup = BeautifulSoup(await response.text(),"html.parser")
         except Exception as e:
-          raise Exception(f"ForumPost/{e}")
+          raise Exception(f"Coudln't parse the html: {e}")
         
         try:
           self.title = soup.find("h1",class_="kl-basligi upInfinite").text.strip() # type: ignore
         except Exception as e:
-          raise Exception(f"ForumPost/title/{e}")
+          raise Exception(f"Couldn't fetch the title: {e}")
         
         try:
           author_info = soup.find("aside",class_="ki-cevapsahibi")
         except Exception as e:
-          raise Exception(f"ForumPost/author_info/{e}")
+          raise Exception(f"Couldn't fetch the author info: {e}")
         
         try:
           if author_info is not None:
             self.author = author_info.find("div", class_="ki-kullaniciadi member-info").find("a").find("b").text # type: ignore
         except Exception as e:
-          raise Exception(f"ForumPost/author/{e}")
+          raise Exception(f"Couldn't fetch the author: {e}")
 
         try:
           self.avatar = author_info.find("div",class_="content-holder").find("a",class_="ki-avatar").find("img").attrs["src"] # type: ignore
-        except AttributeError:
+        except AttributeError as e:
+          print(f"Couldn't fetch the avatar: {e}")
           pass
 
         try:
@@ -340,7 +346,7 @@ class DHTopic():
           self.content = content_json[content_start:content_end].strip()
 
         except Exception as e:
-          raise Exception(f"ForumPost/content/{e}")
+          raise Exception(f"Couldn't fetch the content: {e}")
 
 
 if __name__ == '__main__':
