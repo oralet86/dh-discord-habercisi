@@ -7,13 +7,13 @@ import json
 
 
 def main() -> None:
-  print(getTopicID("/apple-iphone-firsatlari-tum-modeller-ana-konu--121084032?isLink=true"))
-  print(getSubforumID("https://forum.donanimhaber.com/egitim-ve-sinavlar-genel-sohbet--f2642"))
-  print(cleanLink("/apple-iphone-firsatlari-tum-modeller-ana-konu--121084032?isLink=true"))
+  print(get_topic_id("/apple-iphone-firsatlari-tum-modeller-ana-konu--121084032?isLink=true"))
+  print(get_subforum_id("https://forum.donanimhaber.com/egitim-ve-sinavlar-genel-sohbet--f2642"))
+  print(clean_link("/apple-iphone-firsatlari-tum-modeller-ana-konu--121084032?isLink=true"))
   # Put your tests here
 
 
-def getSubforumID(link: str) -> str:
+def get_subforum_id(link: str) -> str:
   """Gets the ID of a forum subforum from a DonanimHaber link
 
   Args:
@@ -25,14 +25,14 @@ def getSubforumID(link: str) -> str:
   Returns:
       str: The ID of the forum subforum
   """
-  link = cleanLink(link)
+  link = clean_link(link)
   dash_index = link.rfind("--")
   if dash_index == -1:
     raise ValueError("Couldn't extract ID from link")
   return link[dash_index+2:]
 
 
-def getTopicID(link: str) -> int:
+def get_topic_id(link: str) -> int:
   """Gets the ID of a forum topic from a DonanimHaber link
 
   Args:
@@ -44,14 +44,14 @@ def getTopicID(link: str) -> int:
   Returns:
       int: The ID of the forum topic
   """
-  link = cleanLink(link)
+  link = clean_link(link)
   dash_index = link.rfind("-")
   if dash_index == -1:
     raise ValueError("Couldn't extract ID from link")
   return int(link[dash_index+1:])
 
 
-def cleanLink(link: str) -> str:
+def clean_link(link: str) -> str:
   """Cleans extra query parameters from the end of a DonanimHaber link
 
   Args:
@@ -69,7 +69,7 @@ def cleanLink(link: str) -> str:
     return link[:dash_index+question_index]
 
 
-async def isValid(link: str) -> bool:
+async def is_valid(link: str) -> bool:
   """Checks if the link leads to a valid DonanimHaber page
 
   Args:
@@ -112,7 +112,7 @@ class DHSubforum():
         DHSubforum: The created DHSubforum object.
     """
     subforum = DHSubforum()
-    await subforum.initalizeSubforum(link=link)
+    await subforum.initialize_subforum(link=link)
 
     return subforum
   
@@ -132,7 +132,7 @@ class DHSubforum():
     return result
 
 
-  async def initalizeSubforum(self, link: str, channels: List[int] = [], latest: int = 0, title: str | None = None) -> None:
+  async def initialize_subforum(self, link: str, channels: List[int] = [], latest: int = 0, title: str | None = None) -> None:
     """A method to initialize a subforum object. This method will be removed in the future.
 
     Args:
@@ -144,8 +144,8 @@ class DHSubforum():
     Raises:
         ValueError: If the link is invalid.
     """
-    if await isValid(link):
-      self.id = getSubforumID(link)
+    if await is_valid(link):
+      self.id = get_subforum_id(link)
       self.channels = channels
       self.latest = latest
       # Title is actually loaded when checking for new posts so we don't request the same page twice
@@ -176,21 +176,21 @@ class DHSubforum():
 
         for post in post_divs:
           # Get the href, for example: /shopflix-guvenilir-mi--155719413
-          post_href = cleanLink(post.select_one("a").get("href"))
+          post_href = clean_link(post.select_one("a").get("href"))
           
-          if getTopicID(post_href) > self.latest:
-            latest_ids.append(getTopicID(post_href))
+          if get_topic_id(post_href) > self.latest:
+            latest_ids.append(get_topic_id(post_href))
             posts.append(await DHTopic.create(post_href))
 
     if len(latest_ids) != 0:
       self.latest = max(latest_ids)
-      DHSubforum.saveSubforums()
+      DHSubforum.save_subforums()
 
     return posts
 
 
   @classmethod
-  async def addChannel(cls, channel_id: int, link: str | None) -> int:
+  async def add_channel(cls, channel_id: int, link: str | None) -> int:
     """Adds a discord channel to the list of channels that receive updates from a subforum.
 
     Args:
@@ -202,7 +202,7 @@ class DHSubforum():
     """
     if link is None:
       return 1
-    id = getSubforumID(link)
+    id = get_subforum_id(link)
 
     for subforum in cls.subforum_list:
       if subforum.id == id:
@@ -210,19 +210,19 @@ class DHSubforum():
           return 2
         else:
           subforum.channels.append(channel_id)
-          cls.saveSubforums()
+          cls.save_subforums()
           return 0
 
     try:
       await cls.create(link)
-      cls.saveSubforums()
+      cls.save_subforums()
       return 0
     except ValueError:
       return 1
 
 
   @classmethod
-  async def removeChannel(cls, channel_id: int, link: str | None = None) -> int:
+  async def remove_channel(cls, channel_id: int, link: str | None = None) -> int:
     """Removes a discord channel from the list of channels that receive updates from a subforum.
 
     Args:
@@ -237,22 +237,22 @@ class DHSubforum():
         if channel_id in subforum.channels:
           subforum.channels.remove(channel_id)
 
-      cls.saveSubforums()
+      cls.save_subforums()
       return 0
 
     else:
       for subforum in cls.subforum_list:
-        if subforum.id == getSubforumID(link):
+        if subforum.id == get_subforum_id(link):
           if channel_id in subforum.channels:
             subforum.channels.remove(channel_id)
 
-            cls.saveSubforums()
+            cls.save_subforums()
             return 1
     return 2
 
 
   @classmethod
-  def loadFromFile(cls, id, channels=[], latest=0, title="") -> None:
+  def load_from_file(cls, id, channels=[], latest=0, title="") -> None:
     subforum = DHSubforum()
     subforum.id = id
     subforum.channels = channels
@@ -261,11 +261,11 @@ class DHSubforum():
 
 
   @classmethod
-  def loadSubforums(cls):
+  def load_subforums(cls):
     if exists(DB_DIRECTORY) and getsize(DB_DIRECTORY) != 0:        # If the .json file does exist, it loads in the data from that file.
       with open(DB_DIRECTORY,"r") as json_file:
         for subforum_data in json.load(json_file):
-          DHSubforum.loadFromFile(id=subforum_data['id'],channels=subforum_data['channels'],
+          DHSubforum.load_from_file(id=subforum_data['id'],channels=subforum_data['channels'],
                   latest=int(subforum_data['latest']),title=subforum_data['title'])
     else:
       with open(DB_DIRECTORY,"w") as json_file:
@@ -273,7 +273,7 @@ class DHSubforum():
 
 
   @classmethod
-  def saveSubforums(cls) -> None:
+  def save_subforums(cls) -> None:
     save_file = []
 
     for subforum in DHSubforum.subforum_list:
@@ -296,11 +296,11 @@ class DHTopic():
   @classmethod
   async def create(cls, href) -> "DHTopic":  # Got to use this to create new objects because of stupid async logic x2
     forumpost = DHTopic(href)
-    await forumpost.getTopicInfo()
+    await forumpost.get_topic_info()
     return forumpost
 
 
-  async def getTopicInfo(self) -> None:
+  async def get_topic_info(self) -> None:
     """Gets the necessary information about the topic.
 
     Raises:
