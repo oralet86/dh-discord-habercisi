@@ -3,10 +3,10 @@ import discord
 import cogs.donanimhaber.forum_classes as forum_classes
 from environmental_variables import SEARCH_COOLDOWN, TEST_CHANNEL
 
-forum_classes.Subforum.load_subforums() # Used to load subforum data from the json
+forum_classes.DHSubforum.load_subforums() # Used to load subforum data from the json
 
 def main() -> None:
-  for sf in forum_classes.Subforum.subforum_list:
+  for sf in forum_classes.DHSubforum.subforum_list:
     print(f"ID: {sf.id}, Channels: {sf.channels}, Latest: {sf.latest}")
 
 
@@ -29,7 +29,7 @@ class ForumChecker(commands.Cog):
       print(f"\"Yeni konulara bakıyorum!\" Mesajı gönderilirken bir hata oluştu: {e}")
 
     try:
-      for subforum in forum_classes.Subforum.subforum_list:
+      for subforum in forum_classes.DHSubforum.subforum_list:
         new_posts = await subforum.check_posts()
 
         for new_post in new_posts:
@@ -49,9 +49,10 @@ class ForumChecker(commands.Cog):
   async def before_my_task(self) -> None:
     await self.bot.wait_until_ready()
 
+
   @commands.command()
-  async def ekle(self, ctx: commands.Context, link:str=None) -> None:
-    result = await forum_classes.Subforum.add_channel(ctx.channel.id, link)
+  async def ekle(self, ctx: commands.Context, link: str | None = None) -> None:
+    result = await forum_classes.DHSubforum.add_channel(channel_id=ctx.channel.id, link=link)
     match result:
       case 0:
           await ctx.send(f"İşlem başarılı! Artık `{link}` forumunda yeni bir konu açıldığında `{ctx.channel.name}` kanalına mesaj atılacak.")
@@ -62,8 +63,8 @@ class ForumChecker(commands.Cog):
 
 
   @commands.command()
-  async def cikar(self, ctx: commands.Context, link:str=None) -> None:
-    result = await forum_classes.Subforum.remove_channel(ctx.channel.id, link) 
+  async def cikar(self, ctx: commands.Context, link: str | None = None) -> None:
+    result = await forum_classes.DHSubforum.remove_channel(ctx.channel.id, link) 
     match result:
       case 0:
           await ctx.send(f"İşlem başarılı! Artık `{ctx.channel.name}` kanalında herhangi bir forum takip edilmeyecek.")
@@ -75,7 +76,7 @@ class ForumChecker(commands.Cog):
 
   @commands.command()
   async def liste(self, ctx: commands.Context) -> None:
-    result = await forum_classes.Subforum.get_list(ctx.channel.id)
+    result = await forum_classes.DHSubforum.get_list(ctx.channel.id)
     return_str = f"Bu sohbette takip edilen altforum sayısı: {len(result)}"
 
     for subforum in result:
@@ -86,10 +87,10 @@ class ForumChecker(commands.Cog):
     await ctx.send(return_str)
 
 
-def make_embed(post: forum_classes.ForumPost) -> discord.Embed:
+def make_embed(post: forum_classes.DHTopic) -> discord.Embed:
   try:
     embed = discord.Embed(title="Yeni Konu!", color=discord.Colour.blurple(), description=post.author)
-    value = post.content if len(post.content) < 512 else f"{post.content[:512]}..."    # Crop any content over 512 characters to save screenspace
+    value = post.content if post.content is not None and len(post.content) < 512 else f"{post.content[:512]}..."    # Crop any content over 512 characters to save screenspace
     embed.add_field(name=post.title,value=value)
     if post.avatar is not None:
       embed.set_thumbnail(url=post.avatar)
