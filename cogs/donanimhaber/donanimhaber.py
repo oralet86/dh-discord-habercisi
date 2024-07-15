@@ -30,7 +30,7 @@ class ForumChecker(commands.Cog):
 
     try:
       for subforum in forum_classes.DHSubforum.subforum_list:
-        new_posts = await subforum.checkPosts()
+        new_posts = await subforum.check_posts()
 
         for new_post in new_posts:
           embed = make_embed(new_post)
@@ -76,7 +76,7 @@ class ForumChecker(commands.Cog):
 
   @commands.command()
   async def liste(self, ctx: commands.Context) -> None:
-    result = await forum_classes.DHSubforum.getList(ctx.channel.id)
+    result = await forum_classes.DHSubforum.get_list(ctx.channel.id)
     return_str = f"Bu sohbette takip edilen altforum sayısı: {len(result)}"
 
     for subforum in result:
