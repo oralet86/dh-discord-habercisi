@@ -90,15 +90,15 @@ async def isValid(link: str) -> bool:
 
 class DHSubforum():
   """A class to represent a subforum in Donanimhaber."""
-
   subforum_list: List["DHSubforum"] = []
 
   def __init__(self) -> None:
-    DHSubforum.subforum_list.append(self)
     self.id: str = ""
     self.channels: List[int] = []
     self.latest: int = 0
     self.title: str = ""
+    
+    self.__class__.subforum_list.append(self)
 
 
   def remove(self) -> None:
