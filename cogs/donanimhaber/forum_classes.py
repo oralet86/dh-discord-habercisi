@@ -238,6 +238,8 @@ class DHSubforum():
 
   @classmethod
   def load_subforums(cls):
+    """Loads the subforum data from the .json file. If the file doesn't exist, it creates an empty one.
+    """
     if exists(DB_DIRECTORY) and getsize(DB_DIRECTORY) != 0:        # If the .json file does exist, it loads in the data from that file.
       with open(DB_DIRECTORY,"r") as json_file:
         for subforum_data in json.load(json_file):
@@ -250,6 +252,8 @@ class DHSubforum():
 
   @classmethod
   def save_subforums(cls) -> None:
+    """Saves the subforum data to the .json file.
+    """
     save_file = []
 
     for subforum in DHSubforum.subforum_list:
@@ -270,7 +274,15 @@ class DHTopic():
 
 
   @classmethod
-  async def create(cls, href) -> "DHTopic":  # Got to use this to create new objects because of stupid async logic x2
+  async def create(cls, href: str) -> "DHTopic":  # Got to use this to create new objects because of stupid async logic x2
+    """Creates a new DHTopic object from the href of a topic.
+
+    Args:
+        href (str): The href to the topic page.
+
+    Returns:
+        DHTopic: The created DHTopic object.
+    """
     forumpost = DHTopic(href)
     await forumpost.get_topic_info()
     return forumpost
