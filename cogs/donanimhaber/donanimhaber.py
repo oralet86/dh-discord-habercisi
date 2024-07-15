@@ -16,8 +16,8 @@ class ForumChecker(commands.Cog):
     self.check.start()
 
 
-  async def cog_unload(self) -> None:
-    await self.check.cancel()
+  def cog_unload(self) -> None:
+    self.check.cancel()
 
 
   @tasks.loop(minutes=SEARCH_COOLDOWN)
