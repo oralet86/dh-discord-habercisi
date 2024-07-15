@@ -72,7 +72,7 @@ class ForumChecker(commands.Cog):
           await ctx.send(f"İşlem başarılı! Artık `{ctx.channel.name}` kanalında `{link}` forumu takip edilmeyecek.")
       case 2:
           await ctx.send(f"`{link}` forumu `{ctx.channel.name}` kanalında zaten takip edilmiyor.")
-  
+
 
   @commands.command()
   async def liste(self, ctx: commands.Context) -> None:
@@ -81,9 +81,9 @@ class ForumChecker(commands.Cog):
 
     for subforum in result:
       return_str+=f"\n- Başlık: `{subforum.title}`, Link: `https://forum.donanimhaber.com/burasi-aslinda-onemsiz--{subforum.id}`"
-    
+
     return_str+="\nHerhangi bir altforumu takip etmeyi 'dhcikar `forum linki`' komutu ile bırakabilirsiniz."
-    
+
     await ctx.send(return_str)
 
 

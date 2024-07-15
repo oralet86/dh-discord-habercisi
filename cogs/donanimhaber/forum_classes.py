@@ -103,7 +103,7 @@ class DHSubforum():
     self.channels: List[int] = channels
     self.latest: int = latest
     self.title: str = title
-    
+
     self.__class__.subforum_list.append(self)
 
 
@@ -123,8 +123,8 @@ class DHSubforum():
       return subforum
     else:
       raise ValueError("Invalid forum link")
-  
-  
+
+
   @classmethod
   async def get_list(cls, id) -> List["DHSubforum"]:
     """Gets a list of DHSubforum objects that send updates to a specific channel.
@@ -136,7 +136,7 @@ class DHSubforum():
     for subforum in DHSubforum.subforum_list:
       if id in subforum.channels:
         result.append(subforum)
-    
+
     return result
 
 
@@ -162,7 +162,7 @@ class DHSubforum():
         for post in post_divs:
           # Get the href, for example: /shopflix-guvenilir-mi--155719413
           post_href = clean_link(post.select_one("a").get("href"))
-          
+
           if get_topic_id(post_href) > self.latest:
             latest_ids.append(get_topic_id(post_href))
             posts.append(await DHTopic.create(post_href))
@@ -300,17 +300,17 @@ class DHTopic():
           soup = BeautifulSoup(await response.text(),"html.parser")
         except Exception as e:
           raise Exception(f"Coudln't parse the html: {e}")
-        
+
         try:
           self.title = soup.find("h1",class_="kl-basligi upInfinite").text.strip() # type: ignore
         except Exception as e:
           raise Exception(f"Couldn't fetch the title: {e}")
-        
+
         try:
           author_info = soup.find("aside",class_="ki-cevapsahibi")
         except Exception as e:
           raise Exception(f"Couldn't fetch the author info: {e}")
-        
+
         try:
           if author_info is not None:
             self.author = author_info.find("div", class_="ki-kullaniciadi member-info").find("a").find("b").text # type: ignore
