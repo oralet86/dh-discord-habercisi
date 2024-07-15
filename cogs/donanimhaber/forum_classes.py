@@ -92,18 +92,24 @@ class DHSubforum():
   """A class to represent a subforum in Donanimhaber."""
   subforum_list: List["DHSubforum"] = []
 
-  def __init__(self) -> None:
-    self.id: str = ""
-    self.channels: List[int] = []
-    self.latest: int = 0
-    self.title: str = ""
+  def __init__(self, id: str = "", channels: List[int] = [], latest: int = 0, title: str = "") -> None:
+    """
+      DO NOT USE THIS METHOD TO CREATE NEW OBJECTS. Use the create() method instead.
+
+      This constructor cannot fetch the necessary info from the website.
+      Only use this if you're loading the object from a file.
+    """
+    self.id: str = id
+    self.channels: List[int] = channels
+    self.latest: int = latest
+    self.title: str = title
     
     self.__class__.subforum_list.append(self)
 
 
   @classmethod
   async def create(cls, link) -> "DHSubforum":  # Got to use this to create new objects because of stupid async logic
-    """Creates a new DHSubforum object and adds it to the subforum list.
+    """Creates a new DHSubforum object from the link of a subforum.
 
     Args:
         link (str): The link to the subforum page.
@@ -111,10 +117,12 @@ class DHSubforum():
     Returns:
         DHSubforum: The created DHSubforum object.
     """
-    subforum = DHSubforum()
-    await subforum.initialize_subforum(link=link)
+    if await is_valid(link):
+      subforum = DHSubforum(id=get_subforum_id(link))
 
-    return subforum
+      return subforum
+    else:
+      raise ValueError("Invalid forum link")
   
   
   @classmethod
@@ -130,29 +138,6 @@ class DHSubforum():
         result.append(subforum)
     
     return result
-
-
-  async def initialize_subforum(self, link: str, channels: List[int] = [], latest: int = 0, title: str | None = None) -> None:
-    """A method to initialize a subforum object. This method will be removed in the future.
-
-    Args:
-        link (str): Link to the subforum page.
-        channels (list, optional): Channels that are alerted whenever a new topic is created in the subforum. Defaults to [].
-        latest (int, optional): ID of the latest topic. Defaults to 0.
-        title (str, optional): Title of the subforum. Defaults to None.
-
-    Raises:
-        ValueError: If the link is invalid.
-    """
-    if await is_valid(link):
-      self.id = get_subforum_id(link)
-      self.channels = channels
-      self.latest = latest
-      # Title is actually loaded when checking for new posts so we don't request the same page twice
-      if title is not None:
-        self.title = title
-    else:
-      raise ValueError("Invalid forum link")
 
 
   async def check_posts(self) -> List["DHTopic"]:
@@ -252,21 +237,12 @@ class DHSubforum():
 
 
   @classmethod
-  def load_from_file(cls, id, channels=[], latest=0, title="") -> None:
-    subforum = DHSubforum()
-    subforum.id = id
-    subforum.channels = channels
-    subforum.latest = latest
-    subforum.title = title
-
-
-  @classmethod
   def load_subforums(cls):
     if exists(DB_DIRECTORY) and getsize(DB_DIRECTORY) != 0:        # If the .json file does exist, it loads in the data from that file.
       with open(DB_DIRECTORY,"r") as json_file:
         for subforum_data in json.load(json_file):
-          DHSubforum.load_from_file(id=subforum_data['id'],channels=subforum_data['channels'],
-                  latest=int(subforum_data['latest']),title=subforum_data['title'])
+          DHSubforum(id=subforum_data['id'],channels=subforum_data['channels'],
+                      latest=int(subforum_data['latest']),title=subforum_data['title'])
     else:
       with open(DB_DIRECTORY,"w") as json_file:
         json.dump([],json_file)
